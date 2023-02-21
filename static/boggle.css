@@ -1,0 +1,76 @@
+body {
+    background-color: #0099CC;
+    font-family: -apple-system, sans-serif;
+}
+
+main {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-size: 120%;
+}
+
+.board {
+    border: solid 20px rgb(29, 73, 132);
+    border-radius: 10px;
+    /*font-family: monospace;*/
+    font-weight: bold;
+    font-size: 150%;
+    box-shadow: #000033 5px 5px 15px 1px;
+}
+
+.board td {
+    text-align: center;
+    width: 1.5em;
+    height: 1.5em;
+    background-color: white;
+    border: solid 1px black;
+    border-radius: 5px;
+}
+
+.msg {
+    top: 1em;
+    position: absolute;
+    padding: 0.5em;
+}
+
+#words {
+    position: absolute;
+    top: 1em;
+    right: 1em;
+    width: 7em;
+    list-style: none;
+}
+
+.msg.ok {
+    color: white;
+    background-color: green;
+}
+
+.msg.err {
+    color: white;
+    background-color: tomato;
+}
+
+form {
+    margin-top: 1em;
+}
+
+.word-input {
+    font-size: 150%;
+    width: 5em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.word-input-btn {
+    font-size: 120%;
+    padding: 0.25em;
+    background-color: rgb(29, 73, 132);
+    border: solid 1px black;
+    border-radius: 3px;
+    color: white;
+    text-transform: uppercase;
+}

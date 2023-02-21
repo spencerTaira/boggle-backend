@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Boggle</title>
+  <link rel="stylesheet" href="/static/boggle.css">
+</head>
+
+<body>
+
+<main>
+  <table class="board">
+    <!-- ultimately, you'll write the JS to make a dynamic board ---
+         when you do, it will look like this: -->
+    <tbody>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- this form will be handled by front-end JS and an AJAX request will be
+       made. -->
+  <form id="newWordForm">
+    <input
+        id="wordInput"
+        class="word-input"
+        autofocus aria-label="Word">
+    <button class="word-input-btn">Go</button>
+  </form>
+
+</main>
+
+<p class="msg">
+  <!-- our JS will put messages here dynamically -->
+</p>
+
+<ul id="words">
+  <!-- our JS will words here as they score -->
+</ul>
+
+<script src="http://unpkg.com/jquery"></script>
+<script src="https://unpkg.com/axios/dist/axios.js"></script>
+<script src="/static/boggle.js"></script>
+</body>
+</html>
