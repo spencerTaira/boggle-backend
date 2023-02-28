@@ -6,6 +6,9 @@ from boggle import BoggleGame
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "this-is-secret"
 
+# register blueprints
+
+
 # The boggle games created, keyed by game id
 games = {}
 
