@@ -18,11 +18,12 @@ class Room (db.Model):
 
     curr_players = db.Column(
         db.Integer,
+        default=0,
         nullable=False,
     )
 
     max_players = db.Column(
-        db.Interger,
+        db.Integer,
         nullable=False,
     )
 
