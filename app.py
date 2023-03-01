@@ -3,11 +3,13 @@ from uuid import uuid4
 
 from boggle import BoggleGame
 
+from routes.static.room import room
+
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "this-is-secret"
 
 # register blueprints
-
+app.register_blueprint(room, url_prefix="/room")
 
 # The boggle games created, keyed by game id
 games = {}
