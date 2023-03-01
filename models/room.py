@@ -5,15 +5,10 @@ class Room (db.Model):
 
     __tablename__ = "rooms"
 
-    id = db.Column(
-        db.Integer,
-        primary_key=True,
-        autoincrement=True,
-    )
-
     room_name = db.Column(
         db.String(50),
         nullable=False,
+        primary_key=True,
     )
 
     curr_players = db.Column(

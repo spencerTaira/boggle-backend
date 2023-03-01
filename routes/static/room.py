@@ -19,12 +19,15 @@ def create_room():
         Output:
     """
 
-    print("<!_!_!_!_!_!_!_!_!_!_!_!__________!!!!!!!!!!!!>", request.json);
     room_name = request.json["roomName"]
     password = request.json["password"]
     max_players = request.json["maxPlayers"]
     game_length = request.json["gameLength"]
 
+    existing = Room.query.get(room_name)
+    if existing:
+        return ("Error, room exists", 403)
+    
     room = Room(
         room_name=room_name,
         password=password,
@@ -32,9 +35,14 @@ def create_room():
         game_length=game_length,
         private=True, #this is default may want to allow for non-private games later
     )
+    
+    try:
+    
+        db.session.add(room)
+        db.session.commit()
+        #update open rooms visible to other connected clients
+        return (jsonify(roomName=room_name), 200)
 
-    #Will we need a try/catch?
-    db.session.add(room)
-    db.session.commit()
-
-    return ("great success", 200)
+    except Exception as e:
+        db.session.rollback()
+        return ("Error creating room", 403)

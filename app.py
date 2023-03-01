@@ -1,3 +1,4 @@
+from flask_cors import CORS
 from flask import Flask, request, render_template, jsonify
 from database import connect_db
 from config import DATABASE_URL
@@ -38,4 +39,5 @@ def new_game():
 
     return {"gameId": "need-real-id", "board": "need-real-board"}
 
+CORS(app)
 connect_db(app)
