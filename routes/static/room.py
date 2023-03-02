@@ -46,3 +46,15 @@ def create_room():
     except Exception as e:
         db.session.rollback()
         return ("Error creating room", 403)
+    
+@room.post("/join")
+def join_room():
+    """
+        Join a room
+        
+        Input: JSON Like:
+        {
+            roomName: 'test room',
+            password: 'password',
+        }
+    """
