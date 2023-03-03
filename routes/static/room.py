@@ -61,8 +61,8 @@ def enter_room():
         }
     """
     
-    room_name = request.json["roomName"]
-    password = request.json["password"]
+    room_name = request.args["roomName"]
+    password = request.args["password"]
     
     room = Room.query.get(room_name)
     if not room:
