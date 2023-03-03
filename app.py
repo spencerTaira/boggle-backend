@@ -3,12 +3,14 @@ from flask import Flask, request, render_template, jsonify
 from database import connect_db
 from config import DATABASE_URL
 from uuid import uuid4
-
+from flask_bcrypt import Bcrypt
 from boggle import BoggleGame
+
+app = Flask(__name__)
+bcrypt = Bcrypt(app)
 
 from routes.static.room import room
 
-app = Flask(__name__)
 app.config["SECRET_KEY"] = "this-is-secret"
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
