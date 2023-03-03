@@ -39,6 +39,6 @@ class Room (db.Model):
     )
 
     host = db.Column(
-        db.String(100),
+        db.Integer,
         nullable=True,
     )
