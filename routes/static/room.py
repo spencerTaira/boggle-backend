@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from database import db
 from models.room import Room
 from models.player import Player
@@ -21,6 +21,7 @@ def create_room():
         Output:
     """
 
+    print("Create room route entered")
     room_name = request.json["roomName"]
     password = request.json["password"]
     max_players = request.json["maxPlayers"]
@@ -45,6 +46,7 @@ def create_room():
         db.session.add(room)
         db.session.commit()
         #update open rooms visible to other connected clients
+        session['good_job'] = 'yay'
         return (jsonify(roomName=room_name), 200)
 
     except Exception as e:
@@ -62,7 +64,8 @@ def enter_room():
             password: 'password',
         }
     """
-
+    print("/enter route entered")
+    #print("is anyone there?????", session['good_job'])
     room_name = request.args["roomName"]
     password = request.args["password"]
 
@@ -71,6 +74,7 @@ def enter_room():
         return("Room/password incorrect", 403)
 
     if bcrypt.check_password_hash(room.password, password):
+        
         return (jsonify(roomName=room_name), 200)
     else:
         return ("Room/password incorrect", 403)
@@ -86,7 +90,8 @@ def join_room():
             roomId: 'room100'
         }
     """
-
+    print("/join route entered")
+    
     player_name = request.json['playerName']
     room_name = request.json['roomId']
 
