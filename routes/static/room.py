@@ -19,6 +19,11 @@ def create_room():
         }
 
         Output:
+        {
+            roomName: 'test room',
+            maxPlayers: 2,
+            gameLength: 60 (in secs),
+        }
     """
 
     print("Create room route entered")
@@ -40,14 +45,17 @@ def create_room():
         game_length=game_length,
         private=True, #this is default may want to allow for non-private games later
     )
-
+    room_info = {
+        'roomName':room_name,
+        'maxPlayers':max_players,
+        'gameLength':game_length,
+    }
     try:
 
         db.session.add(room)
         db.session.commit()
         #update open rooms visible to other connected clients
-        session['good_job'] = 'yay'
-        return (jsonify(roomName=room_name), 200)
+        return (jsonify(roomInfo = room_info), 200)
 
     except Exception as e:
         db.session.rollback()
@@ -63,9 +71,14 @@ def enter_room():
             roomName: 'test room',
             password: 'password',
         }
+        
+        Output: JSON Like:
+        {
+            roomName: 'test room'
+        }
     """
     print("/enter route entered")
-    #print("is anyone there?????", session['good_job'])
+
     room_name = request.args["roomName"]
     password = request.args["password"]
 
@@ -89,6 +102,14 @@ def join_room():
             playerName: 'testPlayer',
             roomId: 'room100'
         }
+        
+        Output: JSON like:
+        {
+            playerId: 1,
+            playerName: 'testPlayer',
+            host: False   
+        }
+        
     """
     print("/join route entered")
     
@@ -124,14 +145,13 @@ def join_room():
 
     # updated_room = Room.query.get(room_name)
 
-    room_data = {
-        'roomName': room.room_name,
-        'currPlayers': room.curr_players,
-        'maxPlayers': room.max_players,
-        'host': room.host,
+    player_data = {
+        'playerId': player.id,
+        'playerName':player.name,
+        'host': room.host == player.id,
     }
 
-    return (jsonify(roomData=room_data), 201)
+    return (jsonify(playerData=player_data), 201)
 
 
 
