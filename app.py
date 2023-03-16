@@ -6,6 +6,8 @@ from config import DATABASE_URL
 from uuid import uuid4
 from flask_bcrypt import Bcrypt
 from boggle import BoggleGame
+from models.room import Room
+import json
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "this-is-secret"
@@ -31,6 +33,16 @@ def connect():
 
     emit('connected', 'Hello')
 
+@socketio.on('intro-get-rooms')
+def show_rooms():
+    """
+        Get active public rooms and send to front-end
+    """
+
+    rooms = Room.query.all()
+    rooms_serialized = [room.serialize for room in rooms]
+    # print('<!!!!!-------------------------------------!!!!!!>', rooms_json)
+    emit('intro-send-rooms', rooms_serialized)
 
 if __name__ == '__main__':
     socketio.run(app)

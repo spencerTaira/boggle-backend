@@ -42,3 +42,15 @@ class Room (db.Model):
         db.Integer,
         nullable=True,
     )
+
+    @property
+    def serialize(self):
+        return {
+            "room_name": self.room_name,
+            "curr_players": self.curr_players,
+            "max_players": self.max_players,
+            "game_length": self.game_length,
+            "private": self.private,
+            "password": self.password,
+            "host": self.host,
+        }
