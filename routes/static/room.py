@@ -71,7 +71,7 @@ def enter_room():
             roomName: 'test room',
             password: 'password',
         }
-        
+
         Output: JSON Like:
         {
             roomName: 'test room'
@@ -87,7 +87,7 @@ def enter_room():
         return("Room/password incorrect", 403)
 
     if bcrypt.check_password_hash(room.password, password):
-        
+
         return (jsonify(roomName=room_name), 200)
     else:
         return ("Room/password incorrect", 403)
@@ -102,17 +102,17 @@ def join_room():
             playerName: 'testPlayer',
             roomId: 'room100'
         }
-        
+
         Output: JSON like:
         {
             playerId: 1,
             playerName: 'testPlayer',
-            host: False   
+            host: False
         }
-        
+
     """
     print("/join route entered")
-    
+
     player_name = request.json['playerName']
     room_name = request.json['roomId']
 
