@@ -39,7 +39,7 @@ def show_rooms():
         Get active public rooms and send to front-end
     """
 
-    rooms = Room.query.all()
+    rooms = Room.query.filter(Room.curr_players < Room.max_players).all()
     rooms_serialized = [room.serialize for room in rooms]
     # print('<!!!!!-------------------------------------!!!!!!>', rooms_json)
     emit('intro-send-rooms', rooms_serialized)
