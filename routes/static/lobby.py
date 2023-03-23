@@ -1,18 +1,18 @@
 from flask import Blueprint, jsonify, request, session
 from database import db
-from models.room import Room
+from models.lobby import Lobby
 from models.player import Player
-from models.player_in_room import PlayerInRoom
+from models.player_in_lobby import PlayerInLobby
 from app import bcrypt
-room = Blueprint("room", __name__)
+lobby = Blueprint("lobby", __name__)
 
-@room.post("/create")
-def create_room():
+@lobby.post("/create")
+def create_lobby():
     """
-    Create a game room
+    Create a game lobby
         Input: JSON Like:
         {
-            roomName: 'test room',
+            lobbyName: 'test lobby',
             password: 'password',
             maxPlayers: 2,
             gameLength: 60 (in secs),
@@ -20,87 +20,87 @@ def create_room():
 
         Output:
         {
-            roomName: 'test room',
+            lobbyName: 'test lobby',
             maxPlayers: 2,
             gameLength: 60 (in secs),
         }
     """
 
-    print("Create room route entered")
-    room_name = request.json["roomName"]
+    print("Create lobby route entered")
+    lobby_name = request.json["lobbyName"]
     password = request.json["password"]
     max_players = request.json["maxPlayers"]
     game_length = request.json["gameLength"]
 
-    existing = Room.query.get(room_name)
+    existing = Lobby.query.get(lobby_name)
     if existing:
-        return ("Error, room exists", 403)
+        return ("Error, lobby exists", 403)
 
     pw_hash = bcrypt.generate_password_hash(password).decode("utf-8")
     print("what is pw_hash>>>>>>>>>>>>>>>", pw_hash)
-    room = Room(
-        room_name=room_name,
+    lobby = Lobby(
+        lobby_name=lobby_name,
         password=pw_hash,
         max_players=max_players,
         game_length=game_length,
         private=True, #this is default may want to allow for non-private games later
     )
-    room_info = {
-        'roomName':room_name,
+    lobby_info = {
+        'lobbyName':lobby_name,
         'maxPlayers':max_players,
         'gameLength':game_length,
     }
     try:
 
-        db.session.add(room)
+        db.session.add(lobby)
         db.session.commit()
-        #update open rooms visible to other connected clients
-        return (jsonify(roomInfo = room_info), 200)
+        #update open lobbys visible to other connected clients
+        return (jsonify(lobbyInfo = lobby_info), 200)
 
     except Exception as e:
         db.session.rollback()
-        return ("Error creating room", 403)
+        return ("Error creating lobby", 403)
 
-@room.get("/enter")
-def enter_room():
+@lobby.get("/enter")
+def enter_lobby():
     """
-        Enter a room
+        Enter a lobby
 
         Input: JSON Like:
         {
-            roomName: 'test room',
+            lobbyName: 'test lobby',
             password: 'password',
         }
 
         Output: JSON Like:
         {
-            roomName: 'test room'
+            lobbyName: 'test lobby'
         }
     """
     print("/enter route entered")
 
-    room_name = request.args["roomName"]
+    lobby_name = request.args["lobbyName"]
     password = request.args["password"]
 
-    room = Room.query.get(room_name)
-    if not room:
-        return("Room/password incorrect", 403)
+    lobby = Lobby.query.get(lobby_name)
+    if not lobby:
+        return("Lobby/password incorrect", 403)
 
-    if bcrypt.check_password_hash(room.password, password):
+    if bcrypt.check_password_hash(lobby.password, password):
 
-        return (jsonify(roomName=room_name), 200)
+        return (jsonify(lobbyName=lobby_name), 200)
     else:
-        return ("Room/password incorrect", 403)
+        return ("Lobby/password incorrect", 403)
 
-@room.post("/join")
-def join_room():
+@lobby.post("/join")
+def join_lobby():
     """
-        Join a room
+        Join a lobby
 
         Input: JSON like:
         {
             playerName: 'testPlayer',
-            roomId: 'room100'
+            lobbyId: 'lobby100'
         }
 
         Output: JSON like:
@@ -114,41 +114,41 @@ def join_room():
     print("/join route entered")
 
     player_name = request.json['playerName']
-    room_name = request.json['roomId']
+    lobby_name = request.json['lobbyId']
 
     player = Player(
         name = player_name,
     )
 
-    room = Room.query.get(room_name)
+    lobby = Lobby.query.get(lobby_name)
 
-    if not room:
-        return ("Room does not exist")
+    if not lobby:
+        return ("Lobby does not exist")
 
-    if room.curr_players == room.max_players:
-        return ("Room is full")
+    if lobby.curr_players == lobby.max_players:
+        return ("Lobby is full")
 
-    #TODO: set creator or host if first person to join room
+    #TODO: set creator or host if first person to join lobby
 
     try:
-        room.players.append(player)
-        room.curr_players += 1
+        lobby.players.append(player)
+        lobby.curr_players += 1
         db.session.commit()
     except:
         db.session.rollback()
         return ("Error creating player")
 
-    if not room.host:
-        print('ROOM HOST ----------------------------------------', room.host)
-        room.host = player.id
+    if not lobby.host:
+        print('Lobby HOST ----------------------------------------', lobby.host)
+        lobby.host = player.id
         db.session.commit()
 
-    # updated_room = Room.query.get(room_name)
+    # updated_lobby = Lobby.query.get(lobby_name)
 
     player_data = {
         'playerId': player.id,
         'playerName':player.name,
-        'host': room.host == player.id,
+        'host': lobby.host == player.id,
     }
 
     return (jsonify(playerData=player_data), 201)

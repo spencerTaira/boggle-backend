@@ -1,11 +1,11 @@
 from database import db
 
-class Room (db.Model):
-    """ Room Model"""
+class Lobby (db.Model):
+    """ Lobby Model"""
 
-    __tablename__ = "rooms"
+    __tablename__ = "lobbys"
 
-    room_name = db.Column(
+    lobby_name = db.Column(
         db.String(50),
         nullable=False,
         primary_key=True,
@@ -46,7 +46,7 @@ class Room (db.Model):
     @property
     def serialize(self):
         return {
-            "room_name": self.room_name,
+            "lobby_name": self.lobby_name,
             "curr_players": self.curr_players,
             "max_players": self.max_players,
             "game_length": self.game_length,

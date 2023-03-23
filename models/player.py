@@ -17,9 +17,9 @@ class Player (db.Model):
     )
 
     # direct navigation: player -> room & back (using 'players')
-    rooms = db.relationship(
-        'Room',
-        secondary='players_in_rooms',
+    lobbys = db.relationship(
+        'Lobby',
+        secondary='players_in_lobbys',
         backref='players'
     )
 

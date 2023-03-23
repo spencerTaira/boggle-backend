@@ -1,9 +1,9 @@
 from database import db
 
-class PlayerInRoom (db.Model):
-    """ Player in Room Model """
+class PlayerInLobby (db.Model):
+    """ Player in Lobby Model """
 
-    __tablename__ = "players_in_rooms"
+    __tablename__ = "players_in_lobbys"
 
     player_id = db.Column(
         db.Integer,
@@ -12,9 +12,9 @@ class PlayerInRoom (db.Model):
         primary_key=True,
     )
 
-    room_id = db.Column(
+    lobby_id = db.Column(
         db.String,
-        db.ForeignKey('rooms.room_name'),
+        db.ForeignKey('lobbys.lobby_name'),
         nullable=False,
         primary_key=True,
     )

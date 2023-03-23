@@ -6,7 +6,7 @@ from config import DATABASE_URL
 from uuid import uuid4
 from flask_bcrypt import Bcrypt
 from boggle import BoggleGame
-from models.room import Room
+from models.lobby import Lobby
 import json
 
 app = Flask(__name__)
@@ -19,10 +19,10 @@ bcrypt = Bcrypt(app)
 socketio = SocketIO(app, logger=True, engineio_logger=True, cors_allowed_origins="*")
 
 
-from routes.static.room import room
+from routes.static.lobby import lobby
 
 # register blueprints
-app.register_blueprint(room, url_prefix="/room")
+app.register_blueprint(lobby, url_prefix="/lobby")
 
 
 @socketio.on('connect')
@@ -33,16 +33,16 @@ def connect():
 
     emit('connected', 'Hello')
 
-@socketio.on('intro-get-rooms')
-def show_rooms():
+@socketio.on('intro-get-lobbys')
+def show_lobbys():
     """
-        Get active public rooms and send to front-end
+        Get active public lobbys and send to front-end
     """
 
-    rooms = Room.query.filter(Room.curr_players < Room.max_players).all()
-    rooms_serialized = [room.serialize for room in rooms]
-    # print('<!!!!!-------------------------------------!!!!!!>', rooms_json)
-    emit('intro-send-rooms', rooms_serialized)
+    lobbys = Lobby.query.filter(Lobby.curr_players < Lobby.max_players).all()
+    lobbys_serialized = [lobby.serialize for lobby in lobbys]
+    # print('<!!!!!-------------------------------------!!!!!!>', lobbys_json)
+    emit('intro-send-lobbys', lobbys_serialized)
 
 if __name__ == '__main__':
     socketio.run(app)
