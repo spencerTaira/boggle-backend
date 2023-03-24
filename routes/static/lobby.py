@@ -6,6 +6,33 @@ from models.player_in_lobby import PlayerInLobby
 from app import bcrypt
 lobby = Blueprint("lobby", __name__)
 
+@lobby.get("/")
+def get_lobby():
+    """
+    Gets a game lobby
+        Input: JSON Like:
+        {
+            lobbyName: 'test lobby'
+        }
+
+        Output:
+        {
+            lobbyName: 'test lobby',
+        }
+    """
+
+    print('Get lobby route entered')
+
+    lobby_name = request.args["lobbyName"]
+
+    lobby = Lobby.query.get(lobby_name)
+    if not lobby:
+        return (jsonify(error=f"Lobby {lobby_name} does not exist!!!!!!"), 404)
+    if (lobby.curr_players >= lobby.max_players):
+        return (f"Lobby {lobby_name} is full!!!", 400)
+
+    return (lobby.lobby_name, 200)
+
 @lobby.post("/create")
 def create_lobby():
     """
@@ -123,10 +150,10 @@ def join_lobby():
     lobby = Lobby.query.get(lobby_name)
 
     if not lobby:
-        return ("Lobby does not exist")
+        return ("Lobby does not exist", 400)
 
     if lobby.curr_players == lobby.max_players:
-        return ("Lobby is full")
+        return ("Lobby is full", 400)
 
     #TODO: set creator or host if first person to join lobby
 
