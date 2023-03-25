@@ -48,6 +48,7 @@ def create_lobby():
         Output:
         {
             lobbyName: 'test lobby',
+            password: 'password'
             maxPlayers: 2,
             gameLength: 60 (in secs),
         }
@@ -134,7 +135,7 @@ def join_lobby():
         {
             playerId: 1,
             playerName: 'testPlayer',
-            host: False
+            lobbyId: 'lobby100',
         }
 
     """

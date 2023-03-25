@@ -7,6 +7,7 @@ from uuid import uuid4
 from flask_bcrypt import Bcrypt
 from boggle import BoggleGame
 from models.lobby import Lobby
+# from models.player import player
 import json
 
 app = Flask(__name__)
@@ -20,9 +21,11 @@ socketio = SocketIO(app, logger=True, engineio_logger=True, cors_allowed_origins
 
 
 from routes.static.lobby import lobby
+from routes.static.player import player
 
 # register blueprints
 app.register_blueprint(lobby, url_prefix="/lobby")
+app.register_blueprint(player, url_prefix="/player")
 
 
 @socketio.on('connect')
