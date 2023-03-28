@@ -17,12 +17,22 @@ def get_player():
             
         Output:
             {
-                playerId:1
+                playerId:1,
                 playeName: test
-                currentConnectionId: 12345
             }
     """
     
-    player = request.args["playerId"]
+    player_id = request.args["playerId"]
+    player = Player.query.get(player_id)
+    
+    if player:
+        player_data = {
+            "playerId": player.id,
+            "playerName": player.name
+        }
+        return (jsonify(playerData=player_data), 200)
+    else:
+        return (jsonify(error=f"Player {player_id} not found."), 404)
+        
     
     
