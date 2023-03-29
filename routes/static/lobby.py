@@ -9,7 +9,8 @@ lobby = Blueprint("lobby", __name__)
 @lobby.get("/")
 def get_lobby():
     """
-    Gets a game lobby
+    Gets a game lobby.  If it does not exist, return error.
+    
         Input: JSON Like:
         {
             lobbyName: 'test lobby'
@@ -17,8 +18,22 @@ def get_lobby():
 
         Output:
         {
-            lobbyName: 'test lobby',
+	        "lobbyData": {
+		        "curr_players": 0,
+		        "game_length": 60,
+		        "host": null,
+		        "lobby_name": "test lobby",
+		        "max_players": 2,
+		        "private": true
+	        }
         }
+             
+        or
+        
+        {
+	        "error": "Lobby test lobby does not exist!!!!!!"
+        }        
+
     """
 
     print('Get lobby route entered')
@@ -28,10 +43,11 @@ def get_lobby():
     lobby = Lobby.query.get(lobby_name)
     if not lobby:
         return (jsonify(error=f"Lobby {lobby_name} does not exist!!!!!!"), 404)
-    if (lobby.curr_players >= lobby.max_players):
-        return (f"Lobby {lobby_name} is full!!!", 400)
-
-    return (lobby.lobby_name, 200)
+    
+    lobby_data = lobby.serialize
+    del lobby_data["password"]
+    
+    return (jsonify(lobbyData=lobby_data), 200)
 
 @lobby.post("/create")
 def create_lobby():
@@ -89,8 +105,8 @@ def create_lobby():
         db.session.rollback()
         return ("Error creating lobby", 403)
 
-@lobby.get("/enter")
-def enter_lobby():
+@lobby.get("/validate")
+def validate_lobby_credentials():
     """
         Enter a lobby
 
@@ -103,6 +119,7 @@ def enter_lobby():
         Output: JSON Like:
         {
             lobbyName: 'test lobby'
+            authenticated: True
         }
     """
     print("/enter route entered")
@@ -112,13 +129,17 @@ def enter_lobby():
 
     lobby = Lobby.query.get(lobby_name)
     if not lobby:
-        return("Lobby/password incorrect", 403)
+        return(jsonify(error="Lobby/password incorrect"), 403)
 
     if bcrypt.check_password_hash(lobby.password, password):
-
-        return (jsonify(lobbyName=lobby_name), 200)
+        authentication = {
+            "lobbyName":lobby.lobby_name,
+            "authenticated": True
+        }
+        
+        return (jsonify(authentication=authentication), 200)
     else:
-        return ("Lobby/password incorrect", 403)
+        return(jsonify(error="Lobby/password incorrect"), 403)
 
 @lobby.post("/join")
 def join_lobby():
