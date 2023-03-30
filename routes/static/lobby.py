@@ -10,7 +10,7 @@ lobby = Blueprint("lobby", __name__)
 def get_lobby():
     """
     Gets a game lobby.  If it does not exist, return error.
-    
+
         Input: JSON Like:
         {
             lobbyName: 'test lobby'
@@ -27,12 +27,12 @@ def get_lobby():
 		        "private": true
 	        }
         }
-             
+
         or
-        
+
         {
 	        "error": "Lobby test lobby does not exist!!!!!!"
-        }        
+        }
 
     """
 
@@ -43,10 +43,10 @@ def get_lobby():
     lobby = Lobby.query.get(lobby_name)
     if not lobby:
         return (jsonify(error=f"Lobby {lobby_name} does not exist!!!!!!"), 404)
-    
+
     lobby_data = lobby.serialize
     del lobby_data["password"]
-    
+
     return (jsonify(lobbyData=lobby_data), 200)
 
 @lobby.post("/create")
@@ -136,7 +136,7 @@ def validate_lobby_credentials():
             "lobbyName":lobby.lobby_name,
             "authenticated": True
         }
-        
+
         return (jsonify(authentication=authentication), 200)
     else:
         return(jsonify(error="Lobby/password incorrect"), 403)
@@ -156,7 +156,7 @@ def join_lobby():
         {
             playerId: 1,
             playerName: 'testPlayer',
-            lobbyId: 'lobby100',
+            currLobbyId: 'lobby100',
         }
 
     """
@@ -172,12 +172,10 @@ def join_lobby():
     lobby = Lobby.query.get(lobby_name)
 
     if not lobby:
-        return ("Lobby does not exist", 400)
+        return(jsonify(error="Lobby does not exist"), 400)
 
     if lobby.curr_players == lobby.max_players:
-        return ("Lobby is full", 400)
-
-    #TODO: set creator or host if first person to join lobby
+        return(jsonify(error="Lobby is full"), 400)
 
     try:
         lobby.players.append(player)
@@ -197,7 +195,7 @@ def join_lobby():
     player_data = {
         'playerId': player.id,
         'playerName':player.name,
-        'host': lobby.host == player.id,
+        'currLobbyId': lobby.lobby_name
     }
 
     return (jsonify(playerData=player_data), 201)
