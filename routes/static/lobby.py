@@ -99,7 +99,7 @@ def create_lobby():
         db.session.add(lobby)
         db.session.commit()
         #update open lobbys visible to other connected clients
-        return (jsonify(lobbyInfo = lobby_info), 200)
+        return (jsonify(lobbyInfo = lobby_info), 201)
 
     except Exception as e:
         db.session.rollback()

@@ -4,11 +4,11 @@ from models.lobby import Lobby
 from models.player import Player
 from models.player_in_lobby import PlayerInLobby
 from app import bcrypt
-from sqlalchemy import exc
+# from sqlalchemy import exc
 
 player = Blueprint("player", __name__)
 
-@player.get("/")
+@player.get("")
 def get_player():
     """
     Gets a players data
@@ -36,7 +36,7 @@ def get_player():
     else:
         return (jsonify(error=f"Player {player_id} not found."), 404)
 
-@player.post("/")
+@player.post("")
 def create_player():
     """
     Create a player in the database
@@ -51,7 +51,7 @@ def create_player():
                 playerName: 'player 1'
             }
     """
-
+    print("\033[96m"+"\n\n\nEntered create_player route\n\n\n" + "\033[00m")
     player_name = request.json['playerName']
     player = Player(
         name=player_name
@@ -60,7 +60,8 @@ def create_player():
     try:
         db.session.add(player)
         db.session.commit()
-    except exc.SQLAlchemyError as e:
+    # except exc.SQLAlchemyError as e:
+    except Exception as e:
         print('Error reason', e.args[0])
         if 'value too long' in e.args[0]:
             db.session.rollback()
@@ -71,5 +72,5 @@ def create_player():
         "playerId": player.id,
         "playerName": player.name
     }
-
+    print("\033[96m"+"\n\n\nEnd create_player route\n\n\n" + "\033[00m")
     return (jsonify(playerData=player_data), 201)
