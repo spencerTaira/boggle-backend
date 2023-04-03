@@ -78,7 +78,7 @@ def create_lobby():
 
     existing = Lobby.query.get(lobby_name)
     if existing:
-        return ("Error, lobby exists", 403)
+        return (jsonify(error="Error, lobby exists"), 403)
 
     pw_hash = bcrypt.generate_password_hash(password).decode("utf-8")
     print("what is pw_hash>>>>>>>>>>>>>>>", pw_hash)
@@ -103,7 +103,7 @@ def create_lobby():
 
     except Exception as e:
         db.session.rollback()
-        return ("Error creating lobby", 403)
+        return (jsonify(error="Error creating lobby"), 403)
 
 @lobby.get("/validate")
 def validate_lobby_credentials():
@@ -132,6 +132,9 @@ def validate_lobby_credentials():
         return(jsonify(error="Lobby/password incorrect"), 403)
 
     if bcrypt.check_password_hash(lobby.password, password):
+        if lobby.curr_players >= lobby.max_players:
+            return (jsonify(error="Lobby is full"), 400)
+        
         authentication = {
             "lobbyName":lobby.lobby_name,
             "authenticated": True
