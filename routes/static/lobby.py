@@ -59,14 +59,12 @@ def create_lobby():
             password: 'password',
             maxPlayers: 2,
             gameLength: 60 (in secs),
+            playerId: 1
         }
 
         Output:
         {
             lobbyName: 'test lobby',
-            password: 'password'
-            maxPlayers: 2,
-            gameLength: 60 (in secs),
         }
     """
 
@@ -75,38 +73,42 @@ def create_lobby():
     password = request.json["password"]
     max_players = request.json["maxPlayers"]
     game_length = request.json["gameLength"]
+    player_id = request.json["playerId"]
 
     existing = Lobby.query.get(lobby_name)
     if existing:
         return (jsonify(error="Error, lobby exists"), 403)
 
     pw_hash = bcrypt.generate_password_hash(password).decode("utf-8")
-    print("what is pw_hash>>>>>>>>>>>>>>>", pw_hash)
+    
     lobby = Lobby(
         lobby_name=lobby_name,
         password=pw_hash,
         max_players=max_players,
         game_length=game_length,
+        host=player_id,
+        curr_players = 1,
         private=True, #this is default may want to allow for non-private games later
     )
-    lobby_info = {
-        'lobbyName':lobby_name,
-        'maxPlayers':max_players,
-        'gameLength':game_length,
-    }
+    
+    player = Player.query.get(player_id)
+    
     try:
 
         db.session.add(lobby)
+        lobby.players.append(player)
         db.session.commit()
         #update open lobbys visible to other connected clients
-        return (jsonify(lobbyInfo = lobby_info), 201)
 
     except Exception as e:
         db.session.rollback()
         return (jsonify(error="Error creating lobby"), 403)
 
-@lobby.get("/validate")
-def validate_lobby_credentials():
+
+    return (jsonify(lobbyName = lobby.lobby_name), 201)
+
+@lobby.post("/join")
+def validate_lobby_credentials_and_join():
     """
         Enter a lobby
 
@@ -114,94 +116,107 @@ def validate_lobby_credentials():
         {
             lobbyName: 'test lobby',
             password: 'password',
+            playerId: 1
         }
 
         Output: JSON Like:
         {
             lobbyName: 'test lobby'
-            authenticated: True
         }
     """
     print("/enter route entered")
 
-    lobby_name = request.args["lobbyName"]
-    password = request.args["password"]
-
+    lobby_name = request.json["lobbyName"]
+    password = request.json["password"]
+    player_id = request.json["playerId"]
+    
     lobby = Lobby.query.get(lobby_name)
+    player = Player.query.get(player_id)
+    
     if not lobby:
         return(jsonify(error="Lobby/password incorrect"), 403)
 
+    if not player:
+        return(jsonify(error="Player doesn't exist"), 403)
+    
     if bcrypt.check_password_hash(lobby.password, password):
         if lobby.curr_players >= lobby.max_players:
             return (jsonify(error="Lobby is full"), 400)
         
-        authentication = {
+        try:
+            lobby.players.append(player)
+            db.session.commit()
+        except :
+            return (jsonify(error="It's our fault. Could not join lobby"), 500)
+        
+        lobby_name = {
             "lobbyName":lobby.lobby_name,
-            "authenticated": True
         }
 
-        return (jsonify(authentication=authentication), 200)
+        return (jsonify(lobbyName=lobby_name), 200)
     else:
         return(jsonify(error="Lobby/password incorrect"), 403)
 
-@lobby.post("/join")
-def join_lobby():
-    """
-        Join a lobby
 
-        Input: JSON like:
-        {
-            playerName: 'testPlayer',
-            lobbyId: 'lobby100'
-        }
 
-        Output: JSON like:
-        {
-            playerId: 1,
-            playerName: 'testPlayer',
-            currLobbyId: 'lobby100',
-        }
+# @lobby.post("/join")
+# def join_lobby():
+#     """
+#         Join a lobby
 
-    """
-    print("/join route entered")
+#         Input: JSON like:
+#         {
+#             playerName: 'testPlayer',
+#             lobbyId: 'lobby100'
+#         }
 
-    player_name = request.json['playerName']
-    lobby_name = request.json['lobbyId']
+#         Output: JSON like:
+#         {
+#             playerId: 1,
+#             playerName: 'testPlayer',
+#             currLobbyId: 'lobby100',
+#         }
 
-    player = Player(
-        name = player_name,
-    )
+#     """
+#     print("/join route entered")
 
-    lobby = Lobby.query.get(lobby_name)
+#     player_name = request.json['playerName']
+#     lobby_name = request.json['lobbyId']
 
-    if not lobby:
-        return(jsonify(error="Lobby does not exist"), 400)
+#     player = Player(
+#         name = player_name,
+#     )
 
-    if lobby.curr_players == lobby.max_players:
-        return(jsonify(error="Lobby is full"), 400)
+#     lobby = Lobby.query.get(lobby_name)
 
-    try:
-        lobby.players.append(player)
-        lobby.curr_players += 1
-        db.session.commit()
-    except:
-        db.session.rollback()
-        return ("Error creating player")
+#     if not lobby:
+#         return(jsonify(error="Lobby does not exist"), 400)
 
-    if not lobby.host:
-        print('Lobby HOST ----------------------------------------', lobby.host)
-        lobby.host = player.id
-        db.session.commit()
+#     if lobby.curr_players == lobby.max_players:
+#         return(jsonify(error="Lobby is full"), 400)
 
-    # updated_lobby = Lobby.query.get(lobby_name)
+#     try:
+#         lobby.players.append(player)
+#         lobby.curr_players += 1
+#         db.session.commit()
+#     except:
+#         db.session.rollback()
+#         return ("Error creating player")
 
-    player_data = {
-        'playerId': player.id,
-        'playerName':player.name,
-        'currLobbyId': lobby.lobby_name
-    }
+#     if not lobby.host:
+#         print('Lobby HOST ----------------------------------------', lobby.host)
+#         lobby.host = player.id
+#         db.session.commit()
 
-    return (jsonify(playerData=player_data), 201)
+#     # updated_lobby = Lobby.query.get(lobby_name)
+
+#     player_data = {
+#         'playerId': player.id,
+#         'playerName':player.name,
+#         'currLobbyId': lobby.lobby_name
+#     }
+
+#     return (jsonify(playerData=player_data), 201)
 
 
 
