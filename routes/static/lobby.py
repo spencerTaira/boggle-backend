@@ -144,14 +144,13 @@ def validate_lobby_credentials_and_join():
             return (jsonify(error="Lobby is full"), 400)
         
         try:
+            lobby.curr_players += 1
             lobby.players.append(player)
             db.session.commit()
         except :
             return (jsonify(error="It's our fault. Could not join lobby"), 500)
         
-        lobby_name = {
-            "lobbyName":lobby.lobby_name,
-        }
+        lobby_name = lobby.lobby_name
 
         return (jsonify(lobbyName=lobby_name), 200)
     else:
