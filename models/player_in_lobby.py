@@ -16,5 +16,4 @@ class PlayerInLobby (db.Model):
         db.String,
         db.ForeignKey('lobbys.lobby_name'),
         nullable=False,
-        primary_key=True,
     )

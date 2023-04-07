@@ -80,19 +80,19 @@ def create_lobby():
         return (jsonify(error="Error, lobby exists"), 403)
 
     pw_hash = bcrypt.generate_password_hash(password).decode("utf-8")
-    
+
     lobby = Lobby(
         lobby_name=lobby_name,
         password=pw_hash,
         max_players=max_players,
         game_length=game_length,
         host=player_id,
-        curr_players = 1,
+        curr_players = 1, #FIXME: Remove
         private=True, #this is default may want to allow for non-private games later
     )
-    
+
     player = Player.query.get(player_id)
-    
+
     try:
 
         db.session.add(lobby)
@@ -129,27 +129,27 @@ def validate_lobby_credentials_and_join():
     lobby_name = request.json["lobbyName"]
     password = request.json["password"]
     player_id = request.json["playerId"]
-    
+
     lobby = Lobby.query.get(lobby_name)
     player = Player.query.get(player_id)
-    
+
     if not lobby:
         return(jsonify(error="Lobby/password incorrect"), 403)
 
     if not player:
         return(jsonify(error="Player doesn't exist"), 403)
-    
+
     if bcrypt.check_password_hash(lobby.password, password):
-        if lobby.curr_players >= lobby.max_players:
+        if lobby.curr_players >= lobby.max_players: #FIXME: Probably another query to PlayerInLobby
             return (jsonify(error="Lobby is full"), 400)
-        
+
         try:
-            lobby.curr_players += 1
+            lobby.curr_players += 1 #FIXME: FIX ME
             lobby.players.append(player)
             db.session.commit()
         except :
             return (jsonify(error="It's our fault. Could not join lobby"), 500)
-        
+
         lobby_name = lobby.lobby_name
 
         return (jsonify(lobbyName=lobby_name), 200)

@@ -1,4 +1,5 @@
 from database import db
+from datetime import datetime
 
 class Lobby (db.Model):
     """ Lobby Model"""
@@ -11,14 +12,9 @@ class Lobby (db.Model):
         primary_key=True,
     )
 
-    curr_players = db.Column(
-        db.Integer,
-        default=0,
-        nullable=False,
-    )
-
     max_players = db.Column(
         db.Integer,
+        default=1,
         nullable=False,
     )
 
@@ -42,6 +38,14 @@ class Lobby (db.Model):
         db.Integer,
         nullable=True,
     )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    #TODO: Think about adding last activity date for cleanup purposes
 
     @property
     def serialize(self):
