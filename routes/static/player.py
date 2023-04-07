@@ -23,6 +23,7 @@ def get_player():
                 playerName: test
             }
     """
+    print("\033[96m"+"\n\n\Get player route entered\n\n\n" + "\033[00m")
 
     player_id = request.args["playerId"]
     player = Player.query.get(player_id)
