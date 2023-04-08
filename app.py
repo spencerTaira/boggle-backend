@@ -116,29 +116,43 @@ for row in result:
     # print("\033[95m"+f"\n\n\nNum_players_in_lobbys {lobbys_serialized}\n\n\n" + "\033[00m")
 
     print("\033[95m"+"\nPre Sub Query\n" + "\033[00m")
-
-    subq = (
-        select(
-            PlayerInLobby.lobby_id,
-            func.count(PlayerInLobby.lobby_id).label('curr_players')
-        )
-        .group_by(PlayerInLobby.lobby_id)
-        .subquery('pil')
-    )
-
+    subquery = db.session.query(
+        PlayerInLobby.lobby_id, db.func.count(PlayerInLobby.lobby_id)
+            .label('curr_players')
+        ).group_by(PlayerInLobby.lobby_id
+    ).subquery()
+        
     print("\033[95m"+"\nPost Sub Query\n" + "\033[00m")
-
-    j = join(Lobby, subq, Lobby.lobby_name == subq.c.lobby_id)
-
-    query = (
-        select(
-            Lobby.lobby_name,
-            Lobby.max_players,
-            subq.c.curr_players
-        )
-        .select_from(j)
-        .where((subq.c.curr_players < Lobby.max_players) | (subq.c.curr_players == None))
+    query = db.session.query(
+        Lobby.lobby_name, Lobby.max_players, subquery.c.curr_players
+    ).outerjoin(
+        subquery, Lobby.lobby_name == subquery.c.lobby_id
+    ).filter(
+        (subquery.c.curr_players < Lobby.max_players) | (subquery.c.curr_players == None)
     )
+
+    
+    # subq = (
+    #     select(
+    #         PlayerInLobby.lobby_id,
+    #         func.count(PlayerInLobby.lobby_id).label('curr_players')
+    #     )
+    #     .group_by(PlayerInLobby.lobby_id)
+    #     .subquery('pil')
+    # )
+
+
+    # j = join(Lobby, subq, Lobby.lobby_name == subq.c.lobby_id)
+
+    # query = (
+    #     select(
+    #         Lobby.lobby_name,
+    #         Lobby.max_players,
+    #         subq.c.curr_players
+    #     )
+    #     .select_from(j)
+    #     .where((subq.c.curr_players < Lobby.max_players) | (subq.c.curr_players == None))
+    # )
 
     # query = (
     #     select(
@@ -151,7 +165,8 @@ for row in result:
     # )
 
     print("\033[95m"+"\nPre Query\n" + "\033[00m")
-    non_full_lobbys = db.session.execute(query)
+    # non_full_lobbys = db.session.execute(query)
+    non_full_lobbys = query.all()
     print("\033[95m"+"\nExecuted Query\n" + "\033[00m")
 
     print("\033[95m")
@@ -162,6 +177,11 @@ for row in result:
         print('each time')
         print(row.lobby_name, row.max_players, row.curr_players)
     print("\033[00m")
+    lobbys_serialized = []
+    for row in non_full_lobbys:
+        lobby = {"lobby_name":row.lobby_name, "max_players":row.max_players, "curr_players":row.curr_players}
+        lobbys_serialized.append(lobby)
+    
     emit('intro-send-lobbys', lobbys_serialized)
 
 if __name__ == '__main__':
