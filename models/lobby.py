@@ -51,10 +51,9 @@ class Lobby (db.Model):
     def serialize(self):
         return {
             "lobby_name": self.lobby_name,
-            "created_at": self.created_at,
             "max_players": self.max_players,
             "game_length": self.game_length,
             "private": self.private,
-            "password": self.password,
+            # "password": self.password,
             "host": self.host,
         }
