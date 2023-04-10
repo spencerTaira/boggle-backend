@@ -46,15 +46,6 @@ def show_lobbys():
 
     print("\033[95m"+"\nWEBSOCKET: Intro-get-lobbys\n" + "\033[00m")
 
-    # num_players_in_lobbys = PlayerInLobby.query.with_entities(
-    #     PlayerInLobby.lobby_id,
-    #     func.count()
-    # ).group_by(PlayerInLobby.lobby_id).all()
-
-    # print("\033[95m"+f"\n\n\nNum_players_in_lobbys {num_players_in_lobbys}\n\n\n" + "\033[00m")
-
-    lobbys = Lobby.query.all()
-
     """
         num_players_in_lobbys (list of tuples)
 
@@ -76,44 +67,7 @@ def show_lobbys():
                 WHERE pil.curr_players < lobbys.max_players
                     OR pil.curr_players is NULL;
 
-
-
-    #TODO: Add this to our route
-        subq = (
-    select([
-        PlayersInLobby.lobby_id,
-        func.count(PlayersInLobby.lobby_id).label('curr_players')
-    ])
-    .group_by(PlayersInLobby.lobby_id)
-    .subquery('pil')
-)
-
-query = (
-    select([
-        Lobby.lobby_name,
-        Lobby.max_players,
-        subq.c.curr_players
-    ])
-    .select_from(Lobby.outerjoin(subq, Lobby.lobby_name == subq.c.lobby_id))
-    .where((subq.c.curr_players < Lobby.max_players) | (subq.c.curr_players == None))
-)
-
-result = db.session.execute(query)
-for row in result:
-    print(row.lobby_name, row.max_players, row.curr_players)
-
-
     """
-
-    # subq = select(
-    #     func.count(PlayerInLobby.lobby_id)
-    # ).where(PlayerInLobby.lobby_id == Lobby.lobby_name).scalar_subquery()
-
-    # non_empty_lobbys = Lobby.query.filter(Lobby.max_players > subq).all()
-
-    #     # non_full_lobbys = [lobby for lobby in lobbys if lobby.max_players <= ]
-    # lobbys_serialized = [lobby.serialize for lobby in non_empty_lobbys]
-    # print("\033[95m"+f"\n\n\nNum_players_in_lobbys {lobbys_serialized}\n\n\n" + "\033[00m")
 
     print("\033[95m"+"\nPre Sub Query\n" + "\033[00m")
     subquery = db.session.query(
@@ -131,55 +85,15 @@ for row in result:
         (subquery.c.curr_players < Lobby.max_players) | (subquery.c.curr_players == None)
     )
 
-    
-    # subq = (
-    #     select(
-    #         PlayerInLobby.lobby_id,
-    #         func.count(PlayerInLobby.lobby_id).label('curr_players')
-    #     )
-    #     .group_by(PlayerInLobby.lobby_id)
-    #     .subquery('pil')
-    # )
-
-
-    # j = join(Lobby, subq, Lobby.lobby_name == subq.c.lobby_id)
-
-    # query = (
-    #     select(
-    #         Lobby.lobby_name,
-    #         Lobby.max_players,
-    #         subq.c.curr_players
-    #     )
-    #     .select_from(j)
-    #     .where((subq.c.curr_players < Lobby.max_players) | (subq.c.curr_players == None))
-    # )
-
-    # query = (
-    #     select(
-    #         Lobby.lobby_name,
-    #         Lobby.max_players,
-    #         subq.c.curr_players
-    #     )
-    #     .select_from(Lobby.outerjoin(subq, Lobby.lobby_name == subq.c.lobby_id))
-    #     .where((subq.c.curr_players < Lobby.max_players) | (subq.c.curr_players == None))
-    # )
-
-    print("\033[95m"+"\nPre Query\n" + "\033[00m")
-    # non_full_lobbys = db.session.execute(query)
     non_full_lobbys = query.all()
-    print("\033[95m"+"\nExecuted Query\n" + "\033[00m")
-
-    print("\033[95m")
-    #FIXME: Not seeing empty lobby (not sure if SQL filter is working properly)
-    #FIXME: Can't get length of non_full_lobbys, is that normal? try pdb
-    print('Number of non full lobbys', len(non_full_lobbys))
-    for row in non_full_lobbys:
-        print('each time')
-        print(row.lobby_name, row.max_players, row.curr_players)
-    print("\033[00m")
+    
     lobbys_serialized = []
     for row in non_full_lobbys:
-        lobby = {"lobby_name":row.lobby_name, "max_players":row.max_players, "curr_players":row.curr_players}
+        lobby = {
+            "lobby_name":row.lobby_name, 
+            "max_players":row.max_players, 
+            "curr_players":row.curr_players
+        }
         lobbys_serialized.append(lobby)
     
     emit('intro-send-lobbys', lobbys_serialized)
