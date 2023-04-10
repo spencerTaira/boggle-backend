@@ -94,7 +94,11 @@ def create_lobby():
     try:
 
         db.session.add(lobby)
-        lobby.players.append(player)
+        player_in_lobby = PlayerInLobby.query.get(player_id)
+        if(player_in_lobby == None):
+            lobby.players.append(player)
+        else:
+            player_in_lobby.lobby_id = lobby_name
         db.session.commit()
         #update open lobbys visible to other connected clients
 
