@@ -44,7 +44,7 @@ def get_lobby():
         return (jsonify(error=f"Lobby {lobby_name} does not exist!!!!!!"), 404)
 
     lobby_data = lobby.serialize
-    del lobby_data["password"]
+    # del lobby_data["password"]
 
     return (jsonify(lobbyData=lobby_data), 200)
 

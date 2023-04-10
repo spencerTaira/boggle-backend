@@ -1,6 +1,6 @@
 from flask_cors import CORS
 from flask import Flask, request, render_template, jsonify
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from database import connect_db, db
 from config import DATABASE_URL
 from uuid import uuid4
@@ -9,8 +9,7 @@ from boggle import BoggleGame
 from models.lobby import Lobby
 from models.player_in_lobby import PlayerInLobby
 # from models.player import player
-import json
-from sqlalchemy import func, select, literal_column, label, join
+
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "this-is-secret"
@@ -36,7 +35,7 @@ def connect():
         Initialize websocket connection
     """
 
-    emit('connected', 'Hello')
+    emit('connected', 'Success')
 
 @socketio.on('intro-get-lobbys')
 def show_lobbys():
@@ -98,6 +97,14 @@ def show_lobbys():
     
     emit('intro-send-lobbys', lobbys_serialized)
 
+@socketio.on('joining')
+def player_joined(player_data):
+    player_name = player_data['playerName']
+    current_lobby = player_data['currLobby']
+    join_room(current_lobby)
+    emit('joined', {"name":player_name, "msg":f"{player_name} has joined the lobby"})
+    
+    
 if __name__ == '__main__':
     socketio.run(app)
 CORS(app)
