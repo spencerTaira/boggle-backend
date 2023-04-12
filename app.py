@@ -29,13 +29,13 @@ app.register_blueprint(lobby, url_prefix="/lobby")
 app.register_blueprint(player, url_prefix="/player")
 
 
-@socketio.on('connect')
-def connect():
-    """
-        Initialize websocket connection
-    """
-
-    emit('connected', 'Success')
+# @socketio.on('connect')
+# def connect():
+#     """
+#         Initialize websocket connection
+#     """
+#     print("\033[95m"+"\nWEBSOCKET: Connected\n" + "\033[00m")
+#     emit('connected', 'Success')
 
 @socketio.on('intro-get-lobbys')
 def show_lobbys():
@@ -74,7 +74,7 @@ def show_lobbys():
             .label('curr_players')
         ).group_by(PlayerInLobby.lobby_id
     ).subquery()
-        
+
     print("\033[95m"+"\nPost Sub Query\n" + "\033[00m")
     query = db.session.query(
         Lobby.lobby_name, Lobby.max_players, subquery.c.curr_players
@@ -85,16 +85,16 @@ def show_lobbys():
     )
 
     non_full_lobbys = query.all()
-    
+
     lobbys_serialized = []
     for row in non_full_lobbys:
         lobby = {
-            "lobby_name":row.lobby_name, 
-            "max_players":row.max_players, 
+            "lobby_name":row.lobby_name,
+            "max_players":row.max_players,
             "curr_players":row.curr_players
         }
         lobbys_serialized.append(lobby)
-    
+
     emit('intro-send-lobbys', lobbys_serialized)
 
 @socketio.on('joining')
@@ -102,9 +102,8 @@ def player_joined(player_data):
     player_name = player_data['playerName']
     current_lobby = player_data['currLobby']
     join_room(current_lobby)
-    emit('joined', {"name":player_name, "msg":f"{player_name} has joined the lobby"})
-    
-    
+    emit('joined', {"playerName":player_name, "message":f"{player_name} has joined the lobby"})
+
 if __name__ == '__main__':
     socketio.run(app)
 CORS(app)
