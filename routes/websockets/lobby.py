@@ -1,7 +1,9 @@
 from flask_socketio import Namespace, emit, join_room, leave_room
 from models.lobby import Lobby
 from models.player_in_lobby import PlayerInLobby
+from models.player_client_id import PlayerClientId
 from database import db
+from flask import request
 
 class LobbyNamespace(Namespace):
     def on_connect(self):
@@ -9,16 +11,28 @@ class LobbyNamespace(Namespace):
 
     def on_disconnect(self):
         print("\033[95m"+"\nWEBSOCKET: LobbyNamespace on_disconnect\n" + "\033[00m")
-        # TODO:
-        # PlayerInLobby.query.filter(PlayerInLobby.player_id==player_id).delete()
-        # db.session.commit()
-
+        sid = request.sid
+        player_id = PlayerClientId.query.get(sid).player_id
+        PlayerClientId.query.filter(PlayerClientId.client_id==sid).delete()
+        PlayerInLobby.query.filter(PlayerInLobby.player_id==player_id).delete()
+        db.session.commit()
        
     def on_joining(self, player_data):
         print("\033[95m"+"\nWEBSOCKET: LobbyNamespace on_joining\n" + "\033[00m")
 
         player_name = player_data['playerName']
         current_lobby = player_data['currLobby']
+        player_id = player_data['playerId']
+        
+        sid = request.sid
+        
+        player_client_id = PlayerClientId(
+           player_id=player_id,
+           client_id=sid   
+        )
+        db.session.add(player_client_id)
+        db.session.commit()
+        
         
         join_room(current_lobby)
         
