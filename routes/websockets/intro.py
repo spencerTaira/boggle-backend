@@ -5,10 +5,10 @@ from database import db
 
 class IntroNamespace(Namespace):
     def on_connect(self):
-       ...
+       print("\033[95m"+"\nWEBSOCKET: IntroNamespace on_connect\n" + "\033[00m")
 
     def on_disconnect(self):
-       ...
+       print("\033[95m"+"\nWEBSOCKET: IntroNamespace on_disconnect\n" + "\033[00m")
 
     def on_intro_get_lobbys(self):
         """
@@ -40,14 +40,14 @@ class IntroNamespace(Namespace):
 
         """
 
-        print("\033[95m"+"\nPre Sub Query\n" + "\033[00m")
+        # print("\033[95m"+"\nPre Sub Query\n" + "\033[00m")
         subquery = db.session.query(
             PlayerInLobby.lobby_id, db.func.count(PlayerInLobby.lobby_id)
                 .label('curr_players')
             ).group_by(PlayerInLobby.lobby_id
         ).subquery()
 
-        print("\033[95m"+"\nPost Sub Query\n" + "\033[00m")
+        # print("\033[95m"+"\nPost Sub Query\n" + "\033[00m")
         query = db.session.query(
             Lobby.lobby_name, Lobby.max_players, subquery.c.curr_players
         ).outerjoin(
