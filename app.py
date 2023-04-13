@@ -9,6 +9,7 @@ from boggle import BoggleGame
 from models.lobby import Lobby
 from models.player_in_lobby import PlayerInLobby
 from routes.websockets.intro import IntroNamespace
+from routes.websockets.lobby import LobbyNamespace
 # from models.player import player
 
 
@@ -98,16 +99,16 @@ app.register_blueprint(player, url_prefix="/player")
 
 #     emit('intro-send-lobbys', lobbys_serialized)
 
-@socketio.on('joining')
-def player_joined(player_data):
-    player_name = player_data['playerName']
-    current_lobby = player_data['currLobby']
-    join_room(current_lobby)
-    emit('joined', {"playerName":player_name, "message":f"{player_name} has joined the lobby"})
+# @socketio.on('joining')
+# def player_joined(player_data):
+#     player_name = player_data['playerName']
+#     current_lobby = player_data['currLobby']
+#     join_room(current_lobby)
+#     emit('joined', {"playerName":player_name, "message":f"{player_name} has joined the lobby"})
 
 
 socketio.on_namespace(IntroNamespace('/intro'))
-
+socketio.on_namespace(LobbyNamespace('/lobby'))
 if __name__ == '__main__':
     socketio.run(app)
 CORS(app)
