@@ -20,7 +20,6 @@ def get_lobby():
         {
 	        "lobbyData": {
 		        "game_length": 60,
-                "created_at": '2022-03-25 02:31:23.456789'
 		        "host": 1,
 		        "lobby_name": "test lobby",
 		        "max_players": 2,
@@ -170,18 +169,18 @@ def rejoin_lobby():
     print("\033[96m"+"\n\n\nRejoin lobby route entered\n\n\n" + "\033[00m")
     current_lobby = request.json['currLobby']
     player_id = request.json['playerId']
-    
+
     lobby = Lobby.query.get(current_lobby)
     player = Player.query.get(player_id)
-    
+
     if not lobby:
         return(jsonify(error="Lobby doesn't exist"), 403)
 
     if not player:
         return(jsonify(error="Player doesn't exist"), 403)
-    
+
     num_players_in_lobby = len(PlayerInLobby.query.filter_by(lobby_id=current_lobby).all())
-    
+
     if num_players_in_lobby >= lobby.max_players:
         return (jsonify(error="Lobby is full"), 400)
 
