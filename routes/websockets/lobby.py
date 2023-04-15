@@ -78,3 +78,6 @@ class LobbyNamespace(Namespace):
         )
 
         emit('update_players', players_info, to=current_lobby)
+
+    def on_test(self, message):
+        print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_test {message}\n" + "\033[00m")
