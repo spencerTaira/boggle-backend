@@ -56,8 +56,7 @@ def create_lobby():
             lobbyName: 'test lobby',
             password: 'password',
             maxPlayers: 2,
-            gameLength: 60 (in secs),
-            playerId: 1
+            gameLength: 60 (in secs)
         }
 
         Output:
@@ -71,7 +70,7 @@ def create_lobby():
     password = request.json["password"]
     max_players = request.json["maxPlayers"]
     game_length = request.json["gameLength"]
-    player_id = request.json["playerId"]
+    # player_id = request.json["playerId"]
 
     existing = Lobby.query.get(lobby_name)
     if existing:
@@ -84,22 +83,21 @@ def create_lobby():
         password=pw_hash,
         max_players=max_players,
         game_length=game_length,
-        host=player_id,
+        # host=player_id,
         private=True, #this is default may want to allow for non-private games later
     )
 
-    player = Player.query.get(player_id)
+    # player = Player.query.get(player_id)
 
     try:
 
         db.session.add(lobby)
-        player_in_lobby = PlayerInLobby.query.get(player_id)
-        if(player_in_lobby == None):
-            lobby.players.append(player)
-        else:
-            player_in_lobby.lobby_id = lobby_name
+        # player_in_lobby = PlayerInLobby.query.get(player_id)
+        # if(player_in_lobby == None):
+        #     lobby.players.append(player)
+        # else:
+        #     player_in_lobby.lobby_id = lobby_name
         db.session.commit()
-        #update open lobbys visible to other connected clients
 
     except Exception as e:
         db.session.rollback()
@@ -108,15 +106,43 @@ def create_lobby():
 
     return (jsonify(lobbyName = lobby.lobby_name), 201)
 
-@lobby.post("/join")
-def validate_lobby_credentials_and_join():
+@lobby.get("/authenticate")
+def authenticate_lobby():
     """
-        Enter a lobby
+        Authenticate lobby credentials
+        
+        Input: JSON Like:
+        {
+            lobbyName: 'test lobby',
+            password: 'password'
+        }
+
+        Output: JSON Like:
+        {
+            lobbyName: 'test lobby'
+        }
+    """
+    
+    lobby_name = request.args["lobbyName"]
+    password = request.args["password"]
+
+    lobby = Lobby.query.get(lobby_name)
+    if not lobby:
+        return(jsonify(error="Lobby/password incorrect"), 403)
+    
+    if bcrypt.check_password_hash(lobby.password, password):
+        return (jsonify(lobbyName=lobby_name), 200)
+ 
+    return(jsonify(error="Lobby/password incorrect"), 403)
+
+@lobby.post("/join")
+def join_lobby():
+    """
+        Join a lobby
 
         Input: JSON Like:
         {
             lobbyName: 'test lobby',
-            password: 'password',
             playerId: 1
         }
 
@@ -128,7 +154,6 @@ def validate_lobby_credentials_and_join():
     print("\033[96m"+"\n\n\nJoin lobby route entered\n\n\n" + "\033[00m")
 
     lobby_name = request.json["lobbyName"]
-    password = request.json["password"]
     player_id = request.json["playerId"]
 
     lobby = Lobby.query.get(lobby_name)
@@ -136,33 +161,87 @@ def validate_lobby_credentials_and_join():
 
 
     if not lobby:
-        return(jsonify(error="Lobby/password incorrect"), 403)
+        return(jsonify(error="Lobby doesn't exist"), 403)
 
     if not player:
         return(jsonify(error="Player doesn't exist"), 403)
 
-    if bcrypt.check_password_hash(lobby.password, password):
-        num_players_in_lobby = len(PlayerInLobby.query.filter_by(lobby_id=lobby_name).all())
-        # print("\033[96m"+f"\n\n\nNumber of players in lobby, {num_players_in_lobby}\n\n\n" + "\033[00m")
+    num_players_in_lobby = len(PlayerInLobby.query.filter_by(lobby_id=lobby_name).all())
 
-        if num_players_in_lobby >= lobby.max_players:
-            return (jsonify(error="Lobby is full"), 400)
+    if num_players_in_lobby >= lobby.max_players:
+        return (jsonify(error="Lobby is full"), 400)
 
-        try:
-            player_in_lobby = PlayerInLobby.query.get(player_id)
-            if (player_in_lobby):
-                player_in_lobby.lobby_id = lobby_name
-            else:
-                lobby.players.append(player)
-            db.session.commit()
-        except :
-            return (jsonify(error="It's our fault. Could not join lobby"), 500)
+    try:
+        player_in_lobby = PlayerInLobby.query.get(player_id)
+        if (player_in_lobby):
+            player_in_lobby.lobby_id = lobby_name
+        else:
+            lobby.players.append(player)
+            
+        if not lobby.host:
+            lobby.host = player_id
+            
+        db.session.commit()
+    except :
+        return (jsonify(error="It's our fault. Could not join lobby"), 500)
 
-        lobby_name = lobby.lobby_name
+    return (jsonify(lobby=lobby.serialize), 200)
+    
+# @lobby.post("/join")
+# def validate_lobby_credentials_and_join():
+#     """
+#         Enter a lobby
 
-        return (jsonify(lobbyName=lobby_name), 200)
-    else:
-        return(jsonify(error="Lobby/password incorrect"), 403)
+#         Input: JSON Like:
+#         {
+#             lobbyName: 'test lobby',
+#             password: 'password',
+#             playerId: 1
+#         }
+
+#         Output: JSON Like:
+#         {
+#             lobbyName: 'test lobby'
+#         }
+#     """
+#     print("\033[96m"+"\n\n\nJoin lobby route entered\n\n\n" + "\033[00m")
+
+#     lobby_name = request.json["lobbyName"]
+#     password = request.json["password"]
+#     player_id = request.json["playerId"]
+
+#     lobby = Lobby.query.get(lobby_name)
+#     player = Player.query.get(player_id)
+
+
+#     if not lobby:
+#         return(jsonify(error="Lobby/password incorrect"), 403)
+
+#     if not player:
+#         return(jsonify(error="Player doesn't exist"), 403)
+
+#     if bcrypt.check_password_hash(lobby.password, password):
+#         num_players_in_lobby = len(PlayerInLobby.query.filter_by(lobby_id=lobby_name).all())
+#         # print("\033[96m"+f"\n\n\nNumber of players in lobby, {num_players_in_lobby}\n\n\n" + "\033[00m")
+
+#         if num_players_in_lobby >= lobby.max_players:
+#             return (jsonify(error="Lobby is full"), 400)
+
+#         try:
+#             player_in_lobby = PlayerInLobby.query.get(player_id)
+#             if (player_in_lobby):
+#                 player_in_lobby.lobby_id = lobby_name
+#             else:
+#                 lobby.players.append(player)
+#             db.session.commit()
+#         except :
+#             return (jsonify(error="It's our fault. Could not join lobby"), 500)
+
+#         lobby_name = lobby.lobby_name
+
+#         return (jsonify(lobbyName=lobby_name), 200)
+#     else:
+#         return(jsonify(error="Lobby/password incorrect"), 403)
 
 @lobby.post("/rejoin")
 def rejoin_lobby():
