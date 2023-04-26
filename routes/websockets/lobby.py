@@ -96,5 +96,9 @@ class LobbyNamespace(Namespace):
 
         emit('update_players', players_info, to=current_lobby)
 
+    def on_chat(self, message_data, current_lobby):
+        print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_chat {message_data} {current_lobby}\n" + "\033[00m")
+        emit('message', message_data, to=current_lobby)
+        
     def on_test(self, message):
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_test {message}\n" + "\033[00m")
