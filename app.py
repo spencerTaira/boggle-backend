@@ -2,7 +2,7 @@ from flask_cors import CORS
 from flask import Flask, request, render_template, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from database import connect_db, db
-from config import DATABASE_URL
+from config import DATABASE_URL, SECRET_KEY
 from uuid import uuid4
 from flask_bcrypt import Bcrypt
 from boggle import BoggleGame
@@ -14,7 +14,7 @@ from routes.websockets.lobby import LobbyNamespace
 
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "this-is-secret"
+app.config["SECRET_KEY"] = SECRET_KEY
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = True
@@ -37,26 +37,26 @@ socketio.on_namespace(LobbyNamespace('/lobby'))
 # @socketio.on('goodbye')
 # def player_disconnect(player_data):
 #     print("\033[95m"+"\nWEBSOCKET: Full disconnect\n" + "\033[00m")
-    
+
 #     player_id = player_data['playerId']
 #     current_lobby = player_data['currLobby']
 #     player_name = player_data['playerName']
-    
+
 #     PlayerInLobby.query.filter(PlayerInLobby.player_id==player_id).delete()
 #     db.session.commit()
-    
+
 #     leave_room(current_lobby)
-    
+
 #     emit(
-#             'left', 
+#             'left',
 #             {
-#                 "playerName":player_name, 
+#                 "playerName":player_name,
 #                 "message":f"{player_name} has left the lobby"
 #             },
 #             to=current_lobby
 #         )
-    
-    
+
+
 if __name__ == '__main__':
     socketio.run(app)
 CORS(app)
