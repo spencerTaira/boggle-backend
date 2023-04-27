@@ -15,7 +15,8 @@ from routes.websockets.lobby import LobbyNamespace
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = SECRET_KEY
-app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    DATABASE_URL.replace("postgres://", "postgresql://"))
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = True
 
