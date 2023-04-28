@@ -42,7 +42,11 @@ class LobbyNamespace(Namespace):
                 emit('update_players', players_info, to=current_lobby)
         else:
             print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect NO SID\n" + "\033[00m")
-            emit('test', request)
+            emit('test', request) #FIXME: request is not json serializable
+
+        #TODO: see if you can replicate 5 minute disconnect
+        #TODO: figure out what secondary on_connect happens before initial disconnect
+        #TODO: Look into maintaining/retaining WS SID's
 
 
     def on_joining(self, player_data):
