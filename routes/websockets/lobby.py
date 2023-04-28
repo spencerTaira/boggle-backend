@@ -14,27 +14,29 @@ class LobbyNamespace(Namespace):
     def on_disconnect(self):
         print("\033[95m"+"\nWEBSOCKET: LobbyNamespace on_disconnect\n" + "\033[00m")
         sid = request.sid
-        player_id = PlayerClientId.query.get(sid).player_id
-        current_lobby = PlayerInLobby.query.get(player_id).lobby_id
-        player_name = Player.query.get(player_id).name
-        PlayerClientId.query.filter(PlayerClientId.client_id==sid).delete()
-        PlayerInLobby.query.filter(PlayerInLobby.player_id==player_id).delete()
-        db.session.commit()
+        player = PlayerClientId.query.get(sid)
+        if player:
+            player_id = player.player_id
+            current_lobby = PlayerInLobby.query.get(player_id).lobby_id
+            player_name = Player.query.get(player_id).name
+            PlayerClientId.query.filter(PlayerClientId.client_id==sid).delete()
+            PlayerInLobby.query.filter(PlayerInLobby.player_id==player_id).delete()
+            db.session.commit()
 
-        if current_lobby:
-            leave_room(current_lobby)
-            players_info = get_players_info_in_lobby(current_lobby)
+            if current_lobby:
+                leave_room(current_lobby)
+                players_info = get_players_info_in_lobby(current_lobby)
 
-            emit(
-                'message',
-                {
-                    "playerName":player_name,
-                    "message":f"{player_name} has left the lobby"
-                },
-                to=current_lobby
-            )
+                emit(
+                    'message',
+                    {
+                        "playerName":player_name,
+                        "message":f"{player_name} has left the lobby"
+                    },
+                    to=current_lobby
+                )
 
-            emit('update_players', players_info, to=current_lobby)
+                emit('update_players', players_info, to=current_lobby)
 
     def on_joining(self, player_data):
         print("\033[95m"+"\nWEBSOCKET: LobbyNamespace on_joining\n" + "\033[00m")
@@ -99,6 +101,6 @@ class LobbyNamespace(Namespace):
     def on_chat(self, message_data, current_lobby):
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_chat {message_data} {current_lobby}\n" + "\033[00m")
         emit('message', message_data, to=current_lobby)
-        
+
     def on_test(self, message):
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_test {message}\n" + "\033[00m")
