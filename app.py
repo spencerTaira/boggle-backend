@@ -35,29 +35,6 @@ app.register_blueprint(player, url_prefix="/player")
 socketio.on_namespace(IntroNamespace('/intro'))
 socketio.on_namespace(LobbyNamespace('/lobby'))
 
-# @socketio.on('goodbye')
-# def player_disconnect(player_data):
-#     print("\033[95m"+"\nWEBSOCKET: Full disconnect\n" + "\033[00m")
-
-#     player_id = player_data['playerId']
-#     current_lobby = player_data['currLobby']
-#     player_name = player_data['playerName']
-
-#     PlayerInLobby.query.filter(PlayerInLobby.player_id==player_id).delete()
-#     db.session.commit()
-
-#     leave_room(current_lobby)
-
-#     emit(
-#             'left',
-#             {
-#                 "playerName":player_name,
-#                 "message":f"{player_name} has left the lobby"
-#             },
-#             to=current_lobby
-#         )
-
-
 if __name__ == '__main__':
     socketio.run(app)
 CORS(app)
