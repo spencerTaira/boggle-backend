@@ -19,6 +19,9 @@ class LobbyNamespace(Namespace):
             player_id = player.player_id
             current_lobby = PlayerInLobby.query.get(player_id).lobby_id
             player_name = Player.query.get(player_id).name
+
+            print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect {player_name} disconnected\n" + "\033[00m")
+
             PlayerClientId.query.filter(PlayerClientId.client_id==sid).delete()
             PlayerInLobby.query.filter(PlayerInLobby.player_id==player_id).delete()
             db.session.commit()
@@ -37,6 +40,10 @@ class LobbyNamespace(Namespace):
                 )
 
                 emit('update_players', players_info, to=current_lobby)
+        else:
+            print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect NO SID\n" + "\033[00m")
+            emit('test', request)
+
 
     def on_joining(self, player_data):
         print("\033[95m"+"\nWEBSOCKET: LobbyNamespace on_joining\n" + "\033[00m")
