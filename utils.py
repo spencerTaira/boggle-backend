@@ -15,3 +15,6 @@ def get_players_info_in_lobby(curr_lobby):
     ]
 
     return players_serialized_info_in_lobby
+
+def get_num_players_in_lobby(lobby_id):
+    return len(PlayerInLobby.query.filter_by(lobby_id=lobby_id).all())

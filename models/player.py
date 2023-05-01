@@ -36,3 +36,5 @@ class Player (db.Model):
         backref='players'
     )
 
+        
+

@@ -10,6 +10,11 @@ from utils import get_players_info_in_lobby
 class LobbyNamespace(Namespace):
     def on_connect(self):
         print("\033[95m"+"\nWEBSOCKET: LobbyNamespace on_connect\n" + "\033[00m")
+        # emit request for current player id
+        
+    #listener for client response from connection
+        # if not in database table player_and_client, add record
+        # otherwise update client_id
 
     def on_disconnect(self):
         print("\033[95m"+"\nWEBSOCKET: LobbyNamespace on_disconnect\n" + "\033[00m")
@@ -42,7 +47,7 @@ class LobbyNamespace(Namespace):
                 emit('update_players', players_info, to=current_lobby)
         else:
             print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect NO SID\n" + "\033[00m")
-            emit('test', request) #FIXME: request is not json serializable
+            # emit('test', request) #FIXME: request is not json serializable
 
         #TODO: see if you can replicate 5 minute disconnect
         #TODO: figure out what secondary on_connect happens before initial disconnect
