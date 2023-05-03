@@ -6,21 +6,17 @@ from models.player import Player
 from database import db
 from flask import request
 from utils import get_players_info_in_lobby
-import pytz
 from datetime import datetime
-
-# Set the timezone to PST
-pst_tz = pytz.timezone('America/Los_Angeles')
 
 class LobbyNamespace(Namespace):
     def on_connect(self):
-        # Get the current time in PST
-        pst_time = datetime.now(pst_tz)
+        # Get current time
+        now = datetime.now()
 
-        # Get the timestamp in seconds
-        timestamp = pst_time.timestamp()
+        # Format time as human-readable string
+        current_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
-        print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_connect at {timestamp}\n" + "\033[00m")
+        print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_connect at {current_time}\n" + "\033[00m")
         # emit request for current player id
 
     #listener for client response from connection
@@ -28,13 +24,13 @@ class LobbyNamespace(Namespace):
         # otherwise update client_id
 
     def on_disconnect(self):
-        # Get the current time in PST
-        pst_time = datetime.now(pst_tz)
+        # Get current time
+        now = datetime.now()
 
-        # Get the timestamp in seconds
-        timestamp = pst_time.timestamp()
+        # Format time as human-readable string
+        current_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
-        print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect {timestamp}\n" + "\033[00m")
+        print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect {current_time}\n" + "\033[00m")
         sid = request.sid
         player = PlayerClientId.query.get(sid)
         if player:
