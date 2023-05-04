@@ -21,8 +21,20 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = True
 
 bcrypt = Bcrypt(app)
-socketio = SocketIO(app, logger=True, engineio_logger=True, cors_allowed_origins="*")
+socketio = SocketIO(
+    app, logger=True,
+    engineio_logger=True,
+    cors_allowed_origins="*",
+    async_mode='eventlet',
+    reconnection=True
+)
 
+# socketio.connection_state_recovery = {
+#     # the backup duration of the sessions and the packets
+#     'max_disconnection_duration': 2 * 60 * 1000,
+#     # whether to skip middlewares upon successful recovery
+#     'skip_middlewares': True,
+# }
 
 from routes.static.lobby import lobby
 from routes.static.player import player

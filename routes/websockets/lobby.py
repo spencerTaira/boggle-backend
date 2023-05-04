@@ -18,6 +18,7 @@ class LobbyNamespace(Namespace):
 
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_connect at {current_time}\n" + "\033[00m")
         # emit request for current player id
+        print("\033[95m"+f"\n\nTESTING REQUEST: {request}\n\n" + "\033[00m")
 
     #listener for client response from connection
         # if not in database table player_and_client, add record
