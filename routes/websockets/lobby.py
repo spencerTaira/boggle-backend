@@ -17,9 +17,43 @@ class LobbyNamespace(Namespace):
         current_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_connect at {current_time}\n" + "\033[00m")
-        # emit request for current player id
-        print("\033[95m"+f"\n\nTESTING REQUEST: {request}\n\n" + "\033[00m")
+        # # emit request for current player id
+        # print("\033[95m"+f"\n\nTESTING REQUEST: {request}\n\n" + "\033[00m")
 
+        emit('connected')
+    
+    def on_player_data(self, player_data):
+        #get current sid and update in player
+        
+        # player_name = player_data['playerName']
+        current_lobby = player_data['currLobby']
+        player_id = player_data['playerId']
+        sid = request.sid
+        
+        player = PlayerClientId.query.filter(PlayerClientId.player_id==player_id)
+        
+        try:
+            if player:
+                player.client_id = sid
+            else:
+                new_player = PlayerClientId(client_id=sid, player_id=player_id)
+                db.session.add(new_player)
+            
+            db.session.commit()
+            
+            join_room(current_lobby)
+            emit('joined')
+            
+            players_info = get_players_info_in_lobby(current_lobby)
+            emit('update_players', players_info, to=current_lobby)
+            
+        except:
+            print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_player_data BAD\n" + "\033[00m")
+            #TODO: make a better except
+        
+        
+    
+        
     #listener for client response from connection
         # if not in database table player_and_client, add record
         # otherwise update client_id
@@ -68,40 +102,40 @@ class LobbyNamespace(Namespace):
         #TODO: Look into maintaining/retaining WS SID's
 
 
-    def on_joining(self, player_data):
-        print("\033[95m"+"\nWEBSOCKET: LobbyNamespace on_joining\n" + "\033[00m")
+    # def on_joining(self, player_data):
+    #     print("\033[95m"+"\nWEBSOCKET: LobbyNamespace on_joining\n" + "\033[00m")
 
-        player_name = player_data['playerName']
-        current_lobby = player_data['currLobby']
-        player_id = player_data['playerId']
+    #     player_name = player_data['playerName']
+    #     current_lobby = player_data['currLobby']
+    #     player_id = player_data['playerId']
 
-        sid = request.sid
+    #     sid = request.sid
 
-        clientExists = PlayerClientId.query.get(sid)
+    #     clientExists = PlayerClientId.query.get(sid)
 
-        if not clientExists:
-            player_client_id = PlayerClientId(
-                player_id=player_id,
-                client_id=sid
-            )
+    #     if not clientExists:
+    #         player_client_id = PlayerClientId(
+    #             player_id=player_id,
+    #             client_id=sid
+    #         )
 
-            db.session.add(player_client_id)
-            db.session.commit()
+    #         db.session.add(player_client_id)
+    #         db.session.commit()
 
-        join_room(current_lobby)
+    #     join_room(current_lobby)
 
-        players_info = get_players_info_in_lobby(current_lobby)
+    #     players_info = get_players_info_in_lobby(current_lobby)
 
-        emit(
-            'message',
-            {
-                "playerName":player_name,
-                "message":f"{player_name} has joined the lobby"
-            },
-            to=current_lobby
-        )
+    #     emit(
+    #         'message',
+    #         {
+    #             "playerName":player_name,
+    #             "message":f"{player_name} has joined the lobby"
+    #         },
+    #         to=current_lobby
+    #     )
 
-        emit('update_players', players_info, to=current_lobby)
+    #     emit('update_players', players_info, to=current_lobby)
 
     def on_leave(self, player_data):
         print("\033[95m"+"\nWEBSOCKET: LobbyNamespace on_leave\n" + "\033[00m")
