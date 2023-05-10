@@ -20,9 +20,12 @@ class LobbyNamespace(Namespace):
         # # emit request for current player id
         # print("\033[95m"+f"\n\nTESTING REQUEST: {request}\n\n" + "\033[00m")
 
-        emit('connected')
+        emit('is_connected')
     
     def on_player_data(self, player_data):
+        print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_player_data\n" + "\033[00m")
+        print(f"\n\n\n{request.sid}\n\n\n")
+        
         #get current sid and update in player
         
         # player_name = player_data['playerName']
@@ -30,7 +33,7 @@ class LobbyNamespace(Namespace):
         player_id = player_data['playerId']
         sid = request.sid
         
-        player = PlayerClientId.query.filter(PlayerClientId.player_id==player_id)
+        player = PlayerClientId.query.filter(PlayerClientId.player_id==player_id).one_or_none()
         
         try:
             if player:
@@ -47,8 +50,9 @@ class LobbyNamespace(Namespace):
             players_info = get_players_info_in_lobby(current_lobby)
             emit('update_players', players_info, to=current_lobby)
             
-        except:
+        except Exception as e:
             print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_player_data BAD\n" + "\033[00m")
+            print(f"\nError is: {e}\n")
             #TODO: make a better except
         
         
@@ -99,44 +103,8 @@ class LobbyNamespace(Namespace):
 
         #TODO: see if you can replicate 5 minute disconnect
         #TODO: figure out what secondary on_connect happens before initial disconnect
-        #TODO: Look into maintaining/retaining WS SID's
 
-
-    # def on_joining(self, player_data):
-    #     print("\033[95m"+"\nWEBSOCKET: LobbyNamespace on_joining\n" + "\033[00m")
-
-    #     player_name = player_data['playerName']
-    #     current_lobby = player_data['currLobby']
-    #     player_id = player_data['playerId']
-
-    #     sid = request.sid
-
-    #     clientExists = PlayerClientId.query.get(sid)
-
-    #     if not clientExists:
-    #         player_client_id = PlayerClientId(
-    #             player_id=player_id,
-    #             client_id=sid
-    #         )
-
-    #         db.session.add(player_client_id)
-    #         db.session.commit()
-
-    #     join_room(current_lobby)
-
-    #     players_info = get_players_info_in_lobby(current_lobby)
-
-    #     emit(
-    #         'message',
-    #         {
-    #             "playerName":player_name,
-    #             "message":f"{player_name} has joined the lobby"
-    #         },
-    #         to=current_lobby
-    #     )
-
-    #     emit('update_players', players_info, to=current_lobby)
-
+    #Closing the window will not neccessarily trigger this event
     def on_leave(self, player_data):
         print("\033[95m"+"\nWEBSOCKET: LobbyNamespace on_leave\n" + "\033[00m")
 
