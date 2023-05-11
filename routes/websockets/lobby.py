@@ -22,7 +22,7 @@ class LobbyNamespace(Namespace):
 
         emit('is_connected')
     
-    def on_player_data(self, player_data):
+    def on_player_data(self, player_data, in_lobby):
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_player_data\n" + "\033[00m")
         print(f"\n\n\n{request.sid}\n\n\n")
         
@@ -45,7 +45,10 @@ class LobbyNamespace(Namespace):
             db.session.commit()
             
             join_room(current_lobby)
-            emit('joined')
+            if not in_lobby:
+                emit('joined', 'joined the lobby')
+            else:
+                emit('joined', 'reconnected')
             
             players_info = get_players_info_in_lobby(current_lobby)
             emit('update_players', players_info, to=current_lobby)
