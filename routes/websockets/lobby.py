@@ -19,14 +19,14 @@ class LobbyNamespace(Namespace):
 
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_connect at {current_time}\n" + "\033[00m")
         # # emit request for current player id
-        # print("\033[95m"+f"\n\nTESTING REQUEST: {request}\n\n" + "\033[00m")
+        print("\033[95m"+f"\n\nTESTING REQUEST: {request}\n\n" + "\033[00m")
 
         emit('is_connected')
     
-    def on_player_data(self, player_data, in_lobby):
+    def on_player_data(self, player_data, socket):
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_player_data\n" + "\033[00m")
         print(f"\n\n\n{request.sid}\n\n\n")
-        
+        print("wtf is socket?", socket)
         #get current sid and update in player
         
         # player_name = player_data['playerName']
@@ -46,7 +46,7 @@ class LobbyNamespace(Namespace):
             db.session.commit()
             
             join_room(current_lobby)
-            if not in_lobby:
+            if not socket:
                 emit('joined', 'joined the lobby')
             else:
                 emit('joined', 'reconnected')
@@ -92,7 +92,7 @@ class LobbyNamespace(Namespace):
                 players_info = get_players_info_in_lobby(current_lobby)
 
                 emit(
-                    'message',
+                    'chat_message',
                     {
                         "playerName":player_name,
                         "message":f"{player_name} has left the lobby"
@@ -124,7 +124,7 @@ class LobbyNamespace(Namespace):
         players_info = get_players_info_in_lobby(current_lobby)
 
         emit(
-            'message',
+            'chat_message',
             {
                 "playerName":player_name,
                 "message":f"{player_name} has left the lobby"
@@ -136,7 +136,7 @@ class LobbyNamespace(Namespace):
 
     def on_chat(self, message_data, current_lobby):
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_chat {message_data} {current_lobby}\n" + "\033[00m")
-        emit('message', message_data, to=current_lobby)
+        emit('chat_message', message_data, to=current_lobby)
 
     def on_test(self, message):
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_test {message}\n" + "\033[00m")
