@@ -9,6 +9,7 @@ from utils import get_players_info_in_lobby
 from datetime import datetime
 
 class LobbyNamespace(Namespace):
+    
     def on_connect(self):
         # Get current time
         now = datetime.now()
