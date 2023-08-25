@@ -9,59 +9,56 @@ from utils import get_players_info_in_lobby
 from datetime import datetime
 
 class LobbyNamespace(Namespace):
-    
+
     def on_connect(self):
-        # Get current time
-        now = datetime.now()
+        player_id = request.args['player_id']
 
-        # Format time as human-readable string
-        current_time = now.strftime("%Y-%m-%d %H:%M:%S")
-
-        print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_connect at {current_time}\n" + "\033[00m")
+        print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_connect\n" + "\033[00m")
         # # emit request for current player id
-        print("\033[95m"+f"\n\nTESTING REQUEST: {request}\n\n" + "\033[00m")
+        print("\033[95m"+f"\nLOBBY WEBSOCKET: PLAYER_ID: {player_id}\n" + "\033[00m")
 
         emit('is_connected')
-    
-    def on_player_data(self, player_data, socket):
+
+    def on_player_data(self, player_data):
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_player_data\n" + "\033[00m")
-        print(f"\n\n\n{request.sid}\n\n\n")
-        print("wtf is socket?", socket)
-        #get current sid and update in player
-        
+
         # player_name = player_data['playerName']
         current_lobby = player_data['currLobby']
         player_id = player_data['playerId']
         sid = request.sid
-        
+
+        #TODO: Make new model connecting player id and lobby name and game id
         player = PlayerClientId.query.filter(PlayerClientId.player_id==player_id).one_or_none()
-        
+
         try:
             if player:
                 player.client_id = sid
             else:
                 new_player = PlayerClientId(client_id=sid, player_id=player_id)
                 db.session.add(new_player)
-            
+
             db.session.commit()
-            
+
             join_room(current_lobby)
+
+            #FIXME: reconfigure to work with new model checking if player id is
+            # linked to game id or lobby id
             if not socket:
                 emit('joined', 'joined the lobby')
             else:
                 emit('joined', 'reconnected')
-            
+
             players_info = get_players_info_in_lobby(current_lobby)
             emit('update_players', players_info, to=current_lobby)
-            
+
         except Exception as e:
             print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_player_data BAD\n" + "\033[00m")
             print(f"\nError is: {e}\n")
             #TODO: make a better except
-        
-        
-    
-        
+
+
+
+
     #listener for client response from connection
         # if not in database table player_and_client, add record
         # otherwise update client_id

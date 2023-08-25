@@ -101,7 +101,7 @@ def create_lobby():
 def authenticate_lobby():
     """
         Authenticate lobby credentials
-        
+
         Input: JSON Like:
         {
             lobbyName: 'test lobby',
@@ -113,17 +113,18 @@ def authenticate_lobby():
             lobbyName: 'test lobby'
         }
     """
-    
+    print("\033[96m"+"\n\n\nAuthenticate lobby route entered\n\n\n" + "\033[00m")
+
     lobby_name = request.args["lobbyName"]
     password = request.args["password"]
 
     lobby = Lobby.query.get(lobby_name)
     if not lobby:
         return(jsonify(error="Lobby/password incorrect"), 403)
-    
+
     if bcrypt.check_password_hash(lobby.password, password):
         return (jsonify(lobbyName=lobby_name), 200)
- 
+
     return(jsonify(error="Lobby/password incorrect"), 403)
 
 @lobby.post("/join")
@@ -167,10 +168,10 @@ def join_lobby():
             player_in_lobby.lobby_id = lobby_name
         else:
             lobby.players.append(player)
-            
+
         if not lobby.host:
             lobby.host = player_id
-            
+
         db.session.commit()
     except :
         return (jsonify(error="It's our fault. Could not join lobby"), 500)
