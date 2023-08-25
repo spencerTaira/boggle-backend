@@ -1,3 +1,4 @@
+from flask import request
 from flask_socketio import Namespace, emit
 from models.lobby import Lobby
 from models.player_in_lobby import PlayerInLobby
@@ -5,10 +6,12 @@ from database import db
 
 class IntroNamespace(Namespace):
     def on_connect(self):
-       print("\033[95m"+"\nWEBSOCKET: IntroNamespace on_connect\n" + "\033[00m")
+        client_id = request.args.get('client_id', None)
+        print("\033[95m"+"\nWEBSOCKET: IntroNamespace on_connect\n" + "\033[00m")
+        print("\033[95m"+f"\nWEBSOCKET: client_id = {client_id}\n" + "\033[00m")
 
     def on_disconnect(self):
-       print("\033[95m"+"\nWEBSOCKET: IntroNamespace on_disconnect\n" + "\033[00m")
+        print("\033[95m"+"\nWEBSOCKET: IntroNamespace on_disconnect\n" + "\033[00m")
 
     def on_intro_get_lobbys(self):
         """

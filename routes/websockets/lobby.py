@@ -1,4 +1,4 @@
-from flask_socketio import Namespace, emit, join_room, leave_room
+from flask_socketio import Namespace, emit, join_room, leave_room, disconnect
 from models.lobby import Lobby
 from models.player_in_lobby import PlayerInLobby
 from models.player_client_id import PlayerClientId
@@ -74,6 +74,8 @@ class LobbyNamespace(Namespace):
         current_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect {current_time}\n" + "\033[00m")
+        print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect {request.namespace}\n" + "\033[00m")
+        # breakpoint()
         sid = request.sid
         player = PlayerClientId.query.get(sid)
         if player:
