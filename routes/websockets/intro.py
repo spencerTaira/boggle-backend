@@ -2,21 +2,11 @@ from flask import request
 from flask_socketio import Namespace, emit
 from models.lobby import Lobby
 from models.player_in_lobby import PlayerInLobby
-from models.player_client_id import PlayerClientId
 from database import db
 
 class IntroNamespace(Namespace):
     def on_connect(self):
-        player_id = request.args['player_id']
         print("\033[95m"+"\nWEBSOCKET: IntroNamespace on_connect\n" + "\033[00m")
-        print("\033[95m"+f"\nWEBSOCKET: player_id = {player_id}\n" + "\033[00m")
-
-        # player = PlayerClientId.query.filter(PlayerClientId.player_id==player_id).one_or_none()
-
-        # player = PlayerClientId.query.filter()
-        # TODO: check if client_id exists
-            # if does exist rejoin all rooms
-            # otherwise add client_id to PlayerClientId
 
     def on_disconnect(self):
         print("\033[95m"+"\nWEBSOCKET: IntroNamespace on_disconnect\n" + "\033[00m")

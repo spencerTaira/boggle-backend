@@ -1,7 +1,7 @@
 from flask_socketio import Namespace, emit, join_room, leave_room, disconnect
 from models.lobby import Lobby
 from models.player_in_lobby import PlayerInLobby
-from models.player_client_id import PlayerClientId
+# from models.player_client_id import PlayerClientId
 from models.player import Player
 from database import db
 from flask import request
@@ -11,57 +11,26 @@ from datetime import datetime
 class LobbyNamespace(Namespace):
 
     def on_connect(self):
-        player_id = request.args['player_id']
-
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_connect\n" + "\033[00m")
+
         # # emit request for current player id
-        print("\033[95m"+f"\nLOBBY WEBSOCKET: PLAYER_ID: {player_id}\n" + "\033[00m")
+        player_id = request.args.get('player_id', 'Initial connect')
+        print("\033[95m"+f"\nLOBBY WEBSOCKET: player_id: {player_id}\n" + "\033[00m")
 
         emit('is_connected')
 
     def on_player_data(self, player_data):
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_player_data\n" + "\033[00m")
 
-        # player_name = player_data['playerName']
         current_lobby = player_data['currLobby']
-        player_id = player_data['playerId']
-        sid = request.sid
+        
 
         #TODO: Make new model connecting player id and lobby name and game id
-        player = PlayerClientId.query.filter(PlayerClientId.player_id==player_id).one_or_none()
+        join_room(current_lobby)
 
-        try:
-            if player:
-                player.client_id = sid
-            else:
-                new_player = PlayerClientId(client_id=sid, player_id=player_id)
-                db.session.add(new_player)
+        players_info = get_players_info_in_lobby(current_lobby)
+        emit('update_players', players_info, to=current_lobby)
 
-            db.session.commit()
-
-            join_room(current_lobby)
-
-            #FIXME: reconfigure to work with new model checking if player id is
-            # linked to game id or lobby id
-            if not socket:
-                emit('joined', 'joined the lobby')
-            else:
-                emit('joined', 'reconnected')
-
-            players_info = get_players_info_in_lobby(current_lobby)
-            emit('update_players', players_info, to=current_lobby)
-
-        except Exception as e:
-            print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_player_data BAD\n" + "\033[00m")
-            print(f"\nError is: {e}\n")
-            #TODO: make a better except
-
-
-
-
-    #listener for client response from connection
-        # if not in database table player_and_client, add record
-        # otherwise update client_id
 
     def on_disconnect(self):
         # Get current time
@@ -73,35 +42,37 @@ class LobbyNamespace(Namespace):
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect {current_time}\n" + "\033[00m")
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect {request.namespace}\n" + "\033[00m")
         # breakpoint()
-        sid = request.sid
-        player = PlayerClientId.query.get(sid)
-        if player:
-            player_id = player.player_id
-            current_lobby = PlayerInLobby.query.get(player_id).lobby_id
-            player_name = Player.query.get(player_id).name
+        player_id = request.args['player_id']
+        print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect {player_id}\n" + "\033[00m")
+        # sid = request.sid
+        # player = PlayerClientId.query.get(sid)
+        # if player:
+        #     player_id = player.player_id
+        #     current_lobby = PlayerInLobby.query.get(player_id).lobby_id
+        #     player_name = Player.query.get(player_id).name
 
-            print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect {player_name} disconnected\n" + "\033[00m")
+        #     print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect {player_name} disconnected\n" + "\033[00m")
 
-            PlayerClientId.query.filter(PlayerClientId.client_id==sid).delete()
-            PlayerInLobby.query.filter(PlayerInLobby.player_id==player_id).delete()
-            db.session.commit()
+        #     PlayerClientId.query.filter(PlayerClientId.client_id==sid).delete()
+        #     PlayerInLobby.query.filter(PlayerInLobby.player_id==player_id).delete()
+        #     db.session.commit()
 
-            if current_lobby:
-                leave_room(current_lobby)
-                players_info = get_players_info_in_lobby(current_lobby)
+        #     if current_lobby:
+        #         leave_room(current_lobby)
+        #         players_info = get_players_info_in_lobby(current_lobby)
 
-                emit(
-                    'chat_message',
-                    {
-                        "playerName":player_name,
-                        "message":f"{player_name} has left the lobby"
-                    },
-                    to=current_lobby
-                )
+        #         emit(
+        #             'chat_message',
+        #             {
+        #                 "playerName":player_name,
+        #                 "message":f"{player_name} has left the lobby"
+        #             },
+        #             to=current_lobby
+        #         )
 
-                emit('update_players', players_info, to=current_lobby)
-        else:
-            print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect NO SID\n" + "\033[00m")
+        #         emit('update_players', players_info, to=current_lobby)
+        # else:
+        #     print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect NO SID\n" + "\033[00m")
             # emit('test', request) #FIXME: request is not json serializable
 
         #TODO: see if you can replicate 5 minute disconnect
