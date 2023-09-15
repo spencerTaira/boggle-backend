@@ -30,7 +30,7 @@ class LobbyNamespace(Namespace):
 
         players_info = get_players_info_in_lobby(current_lobby)
         emit('update_players', players_info, to=current_lobby)
-        emit('joined', 'joined the lobby', to=current_lobby)
+        emit('joined', 'joined the lobby')
 
 
     def on_disconnect(self):
