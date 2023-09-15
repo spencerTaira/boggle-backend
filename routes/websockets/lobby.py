@@ -19,6 +19,9 @@ class LobbyNamespace(Namespace):
 
         emit('is_connected')
 
+        # TODO: Look into checking if player_id exists in a lobby and rejoin them
+        # if it does (for rejoins/disconnects)
+
     def on_player_data(self, player_data):
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_player_data\n" + "\033[00m")
 
