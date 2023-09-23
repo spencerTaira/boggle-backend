@@ -5,7 +5,7 @@ from models.player_in_lobby import PlayerInLobby
 from models.player import Player
 from database import db
 from flask import request
-from utils import get_players_info_in_lobby
+from utils import get_players_info_in_lobby, get_num_players_in_lobby
 from datetime import datetime
 
 class LobbyNamespace(Namespace):
@@ -19,31 +19,65 @@ class LobbyNamespace(Namespace):
 
         emit('is_connected')
 
-        # TODO: Look into checking if player_id exists in a lobby and rejoin them
-        # if it does (for rejoins/disconnects)
 
     def on_player_data(self, player_data):
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_player_data\n" + "\033[00m")
 
         current_lobby = player_data['currLobby']
+        player_id = player_data['playerId']
+        
+        lobby = Lobby.query.get(current_lobby)
+        player = Player.query.get(player_id)
+        
+        if not lobby:
+            emit('error', {'msg':"Lobby doesn't exist", 'code': 403})
+            return
+        
+        if not player:
+            emit('error', {'msg':"Player doesn't exist", 'code': 403})
+            return
+            
+        num_players_in_lobby = get_num_players_in_lobby(current_lobby)
+        if num_players_in_lobby >= lobby.max_players:
+            emit('error', {'msg':"Lobby is full", 'code': 400})
+            return
+        
+        try:
+            player_in_lobby = PlayerInLobby.query.get(player_id)
+            if (player_in_lobby):
+                player_in_lobby.lobby_id = current_lobby
+            else:
+                lobby.players.append(player)
 
+            if not lobby.host:
+                lobby.host = player_id
 
+            db.session.commit()
+        except :
+            emit('error', {'msg':"It's our fault. Could not join lobby", 'code':500})
+            return
+        
+        emit('lobby_information', lobby.serialize)
+        
         #TODO: Make new model connecting player id and lobby name and game id
         join_room(current_lobby)
 
+        # TODO: Look into checking if player_id exists in a lobby and rejoin them
+        # if it does (for rejoins/disconnects)
         players_info = get_players_info_in_lobby(current_lobby)
         emit('update_players', players_info, to=current_lobby)
+        
         emit('joined', 'joined the lobby')
 
 
     def on_disconnect(self):
         # Get current time
-        # now = datetime.now()
+        now = datetime.now()
 
         # Format time as human-readable string
-        # current_time = now.strftime("%Y-%m-%d %H:%M:%S")
+        current_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
-        # print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect {current_time}\n" + "\033[00m")
+        print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect {current_time}\n" + "\033[00m")
         player_id = request.args['player_id']
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect {request.namespace}\n" + "\033[00m")
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_disconnect {player_id}\n" + "\033[00m")
@@ -150,3 +184,22 @@ class LobbyNamespace(Namespace):
 
     # def on_test(self, message):
     #     print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_test {message}\n" + "\033[00m")
+    
+    '''
+    If I'm a player causing the disconnect/reconnect
+    
+    Intro -> JoinLobbyForm -> Static Authenticate API call -> Server says yes or no
+    -> Lobby -> Static API joinLobby -> Joined to lobby in backend or errors thrown
+    -> Error navigate out otherwise lobby communication begins
+    
+    
+    
+    '''
+
+
+    '''
+    If the internet is causing the disconnect/reconnnect
+    
+    Component isn't rerendered meaning certain functions/methods are not called as result
+    
+    '''
