@@ -5,6 +5,8 @@ from models.player import Player
 from models.player_in_lobby import PlayerInLobby
 from app import bcrypt
 from utils import get_num_players_in_lobby
+from boggle import BoggleGame
+from app import cache
 
 lobby = Blueprint("lobby", __name__)
 
@@ -211,6 +213,29 @@ def rejoin_lobby():
     lobby_name = lobby.lobby_name
 
     return (jsonify(lobbyName=lobby_name), 200)
+
+@lobby.post("/gameStart")
+def start_game():
+    print("\033[96m"+"\n\n\nGame start route entered\n\n\n" + "\033[00m")
+
+    lobby_id = request.json['lobbyName']
+    boggle_game = BoggleGame()
+    cache.set(lobby_id, boggle_game.board)
+    return (jsonify(success=True), 200)
+
+@lobby.get("/board")
+def get_board():
+    lobby_id = request.args["lobbyName"]
+    game_board = cache.get(lobby_id)
+    return (jsonify(gameBoard=game_board), 200)
+
+    """
+    Step 1: Create game board
+    Step 2: Store game board
+    Step 2: Return game board
+    """
+
+
 
 
 

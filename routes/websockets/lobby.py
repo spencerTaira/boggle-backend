@@ -25,23 +25,23 @@ class LobbyNamespace(Namespace):
 
         current_lobby = player_data['currLobby']
         player_id = player_data['playerId']
-        
+
         lobby = Lobby.query.get(current_lobby)
         player = Player.query.get(player_id)
-        
+
         if not lobby:
             emit('error', {'msg':"Lobby doesn't exist", 'code': 403})
             return
-        
+
         if not player:
             emit('error', {'msg':"Player doesn't exist", 'code': 403})
             return
-            
+
         num_players_in_lobby = get_num_players_in_lobby(current_lobby)
         if num_players_in_lobby >= lobby.max_players:
             emit('error', {'msg':"Lobby is full", 'code': 400})
             return
-        
+
         try:
             player_in_lobby = PlayerInLobby.query.get(player_id)
             if (player_in_lobby):
@@ -56,9 +56,9 @@ class LobbyNamespace(Namespace):
         except :
             emit('error', {'msg':"It's our fault. Could not join lobby", 'code':500})
             return
-        
+
         emit('lobby_information', lobby.serialize)
-        
+
         #TODO: Make new model connecting player id and lobby name and game id
         join_room(current_lobby)
 
@@ -66,7 +66,7 @@ class LobbyNamespace(Namespace):
         # if it does (for rejoins/disconnects)
         players_info = get_players_info_in_lobby(current_lobby)
         emit('update_players', players_info, to=current_lobby)
-        
+
         emit('joined', 'joined the lobby')
 
 
@@ -182,24 +182,29 @@ class LobbyNamespace(Namespace):
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_chat {message_data} {current_lobby}\n" + "\033[00m")
         emit('chat_message', message_data, to=current_lobby, include_self=include_self)
 
+    def on_gameStart(self, current_lobby, include_self=True):
+        print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace gameStart {current_lobby}\n" + "\033[00m")
+        emit('startGame')
+
+
     # def on_test(self, message):
     #     print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace on_test {message}\n" + "\033[00m")
-    
+
     '''
     If I'm a player causing the disconnect/reconnect
-    
+
     Intro -> JoinLobbyForm -> Static Authenticate API call -> Server says yes or no
     -> Lobby -> Static API joinLobby -> Joined to lobby in backend or errors thrown
     -> Error navigate out otherwise lobby communication begins
-    
-    
-    
+
+
+
     '''
 
 
     '''
     If the internet is causing the disconnect/reconnnect
-    
+
     Component isn't rerendered meaning certain functions/methods are not called as result
-    
+
     '''

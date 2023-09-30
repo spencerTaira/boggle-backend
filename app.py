@@ -1,5 +1,6 @@
 from flask_cors import CORS
 from flask import Flask, request, render_template, jsonify
+from flask_caching import Cache
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from database import connect_db, db
 from config import DATABASE_URL, SECRET_KEY
@@ -12,13 +13,22 @@ from routes.websockets.intro import IntroNamespace
 from routes.websockets.lobby import LobbyNamespace
 # from models.player import player
 
-
 app = Flask(__name__)
 app.config["SECRET_KEY"] = SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     DATABASE_URL.replace("postgres://", "postgresql://"))
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = True
+
+# Cache config
+config = {
+    "DEBUG": True,          # some Flask specific configs
+    "CACHE_TYPE": "SimpleCache",  # Flask-Caching related configs
+    "CACHE_DEFAULT_TIMEOUT": 300
+}
+
+app.config.from_mapping(config)
+cache = Cache(app)
 
 bcrypt = Bcrypt(app)
 socketio = SocketIO(
