@@ -184,7 +184,7 @@ class LobbyNamespace(Namespace):
 
     def on_gameStart(self, current_lobby, include_self=True):
         print("\033[95m"+f"\nWEBSOCKET: LobbyNamespace gameStart {current_lobby}\n" + "\033[00m")
-        emit('startGame')
+        emit('startGame', to=current_lobby, include_self=include_self)
 
 
     # def on_test(self, message):
