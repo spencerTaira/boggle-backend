@@ -47,6 +47,17 @@ app.register_blueprint(player, url_prefix="/player")
 socketio.on_namespace(IntroNamespace('/intro'))
 socketio.on_namespace(LobbyNamespace('/lobby'))
 
+@app.get("/ping-pong")
+def ping_pong():
+    """
+    Workaround for Render 15 minute Idle. Websockets don't count.
+    """
+
+    print("\033[96m"+"\n\n\nGot Pingged Yo\n\n\n" + "\033[00m")
+
+    pong = "pong"
+    return (jsonify(pong=pong), 200)
+
 if __name__ == '__main__':
     socketio.run(app)
 CORS(app)
